@@ -31,7 +31,6 @@ resized_image =
   |> NxImage.resize({224, 224}, method: :nearest)
   |> Kino.Image.new()
 
-resized_image.content |> byte_size()
 resized_image
 ```
 
