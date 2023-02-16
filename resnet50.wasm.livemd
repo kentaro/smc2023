@@ -1,6 +1,11 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Image Prediction using a Standalone Wasm Binary of ResNet50
+# Image Prediction using a Standalone Wasm Binary of ResNet50 on Nerves ()
+
+## Experimental environment
+
+* Hardware: Raspberry Pi 4 Model B
+* Software: Nerves Livebook
 
 ## Uploading an image to be predicted
 
@@ -12,6 +17,8 @@ This is a sample image that is used in this livebook.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/4/40/Just_one_lion.jpg?20061206183417)
 [File:Just one lion.jpg - Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Just_one_lion.jpg)
+
+## Uploading an image to be predicted
 
 ## Preprocessing the image
 
@@ -105,9 +112,13 @@ label_data =
 ## Executing a prediction
 
 ```elixir
-result =
+predict = fn ->
   Wasmtube.from_file("/data/models/resnet50.wasm")
   |> Wasmtube.call_function("predict", image: resized_image.content, width: 224, height: 224)
+end
+
+{time, result} = :timer.tc(predict)
+result
 ```
 
 <!-- livebook:{"output":true} -->
@@ -125,6 +136,16 @@ result =
   "shape" => [1, 1000],
   "strides" => nil
 }
+```
+
+```elixir
+time / 1_000_000
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+4.928086
 ```
 
 ## Find an index whose value is highest
