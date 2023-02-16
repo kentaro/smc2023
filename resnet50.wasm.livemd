@@ -18,8 +18,6 @@ This is a sample image that is used in this livebook.
 ![](https://upload.wikimedia.org/wikipedia/commons/4/40/Just_one_lion.jpg?20061206183417)
 [File:Just one lion.jpg - Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Just_one_lion.jpg)
 
-## Uploading an image to be predicted
-
 ## Preprocessing the image
 
 ```elixir
