@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Image Prediction using a Standalone Wasm Binary of ResNet50 on Nerves ()
+# Image Prediction using a Standalone Wasm Binary of ResNet50 on Nerves
 
 ## Experimental environment
 
