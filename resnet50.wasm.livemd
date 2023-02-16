@@ -1,0 +1,166 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Image Prediction using a Standalone Wasm Binary of ResNet50
+
+## Uploading an image to be predicted
+
+```elixir
+input = Kino.Input.image("IMAGE")
+```
+
+This is a sample image that is used in this livebook.
+
+![](https://upload.wikimedia.org/wikipedia/commons/4/40/Just_one_lion.jpg?20061206183417)
+[File:Just one lion.jpg - Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Just_one_lion.jpg)
+
+## Preprocessing the image
+
+```elixir
+image = input |> Kino.Input.read()
+
+resized_image =
+  image
+  |> Map.get(:data)
+  |> Nx.from_binary(:u8)
+  |> Nx.reshape({image.height, image.width, 3})
+  |> NxImage.resize({224, 224}, method: :nearest)
+  |> Kino.Image.new()
+
+resized_image.content |> byte_size()
+resized_image
+```
+
+## Preparing label data
+
+```elixir
+label_data =
+  Req.get!("https://raw.githubusercontent.com/kazum/tvm-wasm/master/synset.csv")
+  |> Map.get(:body)
+  |> String.trim()
+  |> String.split("\r\n")
+  |> Enum.reduce(%{}, fn line, acc ->
+    [k, v] = line |> String.split(",", parts: 2)
+    acc |> Map.put(String.to_integer(k), v)
+  end)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{
+  912 => "\"worm fence, snake fence, snake-rail fence, Virginia fence\"",
+  326 => "\"lycaenid, lycaenid butterfly\"",
+  33 => "\"loggerhead, loggerhead turtle, Caretta caretta\"",
+  289 => "\"snow leopard, ounce, Panthera uncia\"",
+  518 => "crash helmet",
+  990 => "\"buckeye, horse chestnut, conker\"",
+  456 => "bow",
+  401 => "\"accordion, piano accordion, squeeze box\"",
+  168 => "redbone",
+  309 => "bee",
+  117 => "\"chambered nautilus, pearly nautilus, nautilus\"",
+  377 => "marmoset",
+  579 => "\"grand piano, grand\"",
+  277 => "\"red fox, Vulpes vulpes\"",
+  399 => "abaya",
+  413 => "\"assault rifle, assault gun\"",
+  477 => "\"carpenter's kit, tool kit\"",
+  246 => "Great Dane",
+  704 => "parking meter",
+  175 => "\"otterhound, otter hound\"",
+  740 => "power drill",
+  621 => "\"lawn mower, mower\"",
+  869 => "trench coat",
+  219 => "\"cocker spaniel, English cocker spaniel, cocker\"",
+  923 => "plate",
+  492 => "chest",
+  360 => "otter",
+  669 => "mosquito net",
+  12 => "\"house finch, linnet, Carpodacus mexicanus\"",
+  192 => "\"cairn, cairn terrier\"",
+  974 => "geyser",
+  311 => "\"grasshopper, hopper\"",
+  864 => "\"tow truck, tow car, wrecker\"",
+  327 => "\"starfish, sea star\"",
+  916 => "\"web site, website, internet site, site\"",
+  188 => "wire-haired fox terrier",
+  270 => "\"white wolf, Arctic wolf, Canis lupus tundrarum\"",
+  157 => "papillon",
+  564 => "four-poster",
+  559 => "folding chair",
+  349 => "\"bighorn, bighorn sheep, cimarron, Rocky Mountain bighorn, Rocky Mountain sheep, Ovis canadensis\"",
+  636 => "\"mailbag, postbag\"",
+  132 => "\"American egret, great white heron, Egretta albus\"",
+  770 => "running shoe",
+  513 => "\"cornet, horn, trumpet, trump\"",
+  405 => "\"airship, dirigible\"",
+  73 => "\"barn spider, Araneus cavaticus\"",
+  328 => "sea urchin",
+  822 => "steel drum",
+  427 => "\"barrel, cask\"",
+  ...
+}
+```
+
+## Executing a prediction
+
+```elixir
+result =
+  Wasmtube.from_file("/data/models/resnet50.wasm")
+  |> Wasmtube.call_function("predict", image: resized_image.content, width: 224, height: 224)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{
+  "data" => [-1.2380532, -3.5076628, -1.745974, -2.5777662, -2.575174, 0.00320144, -1.8548435,
+   1.9798119, 0.8790855, 2.6920712, -1.6338683, -2.262256, -1.7829849, -3.352644, -2.6420937,
+   -1.8500642, -1.9090271, -0.8531388, -0.61099184, -3.1587193, -2.0874774, 2.5533094, 1.2311407,
+   1.499493, 2.5900023, -1.0595945, -1.6094693, -1.8300521, -1.3385713, -2.9864905, -0.78965205,
+   -2.2536402, -1.1391659, -2.6450782, -3.3188202, -3.0392742, -2.900531, -2.6652336, -0.8872474,
+   -0.7320179, -2.1677976, -2.5951917, -1.1870259, 0.06935866, -1.2533929, -0.8644694, -3.7154303,
+   0.23462734, -0.81006914, ...],
+  "dtype" => "FP32",
+  "shape" => [1, 1000],
+  "strides" => nil
+}
+```
+
+## Find an index whose value is highest
+
+```elixir
+{max_index, max_value} =
+  result
+  |> Map.get("data")
+  |> Enum.with_index()
+  |> Enum.reduce({0, 0}, fn {v, i}, acc ->
+    {_, max_value} = acc
+
+    if v > max_value do
+      {i, v}
+    else
+      acc
+    end
+  end)
+
+{max_index, max_value}
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{291, 15.836072}
+```
+
+## Prediction result
+
+```elixir
+label_data[max_index]
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"\"lion, king of beasts, Panthera leo\""
+```
