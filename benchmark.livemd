@@ -1,0 +1,147 @@
+# Image Prediction using a Standalone Wasm Binary of ResNet50 on Nerves - fork
+
+```elixir
+Mix.install(
+  [
+    {:bumblebee, "~> 0.1.2"},
+    {:nx, "~> 0.4.1"},
+    {:exla, "~> 0.4.1"},
+    {:axon, "~> 0.3.1"},
+    {:kino, "~> 0.8.0"},
+    {:req, "~> 0.3.5"},
+    {:benchee, "~> 1.1.0"},
+    {:wasmtube, github: "kentaro/wasmtube", branch: :main}
+  ],
+  config: [
+    nx: [
+      default_backend: EXLA.Backend,
+      default_defn_options: [compiler: EXLA]
+    ]
+  ],
+  system_env: [
+    XLA_TARGET: "cpu"
+  ],
+  # XLA_TARGETの変更で、exlaを再コンパイルしたい時はtrueにする
+  force: true
+)
+
+Nx.default_backend()
+```
+
+## Experimental environment
+
+* Hardware: Raspberry Pi 4 Model B
+* Software: Nerves Livebook
+
+## Uploading an image to be predicted
+
+```elixir
+input = Kino.Input.image("IMAGE")
+```
+
+This is a sample image that is used in this livebook.
+
+![](https://upload.wikimedia.org/wikipedia/commons/4/40/Just_one_lion.jpg?20061206183417)
+[File:Just one lion.jpg - Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Just_one_lion.jpg)
+
+## Preprocessing the image
+
+```elixir
+image = input |> Kino.Input.read()
+
+nx_image =
+  image.data
+  |> Nx.from_binary(:u8)
+  |> Nx.reshape({image.height, image.width, 3})
+  |> NxImage.resize({224, 224}, method: :nearest)
+
+kino_image =
+  nx_image
+  |> Kino.Image.new()
+```
+
+## Preparing label data
+
+```elixir
+label_data =
+  Req.get!("https://raw.githubusercontent.com/kazum/tvm-wasm/master/synset.csv")
+  |> Map.get(:body)
+  |> String.trim()
+  |> String.split("\r\n")
+  |> Enum.reduce(%{}, fn line, acc ->
+    [k, v] = line |> String.split(",", parts: 2)
+    acc |> Map.put(String.to_integer(k), v)
+  end)
+```
+
+## Prediction with Wasm binary
+
+```elixir
+resnet50_wasm =
+  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/models/resnet50.wasm")
+
+resnet50_wasm
+|> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
+```
+
+```elixir
+time / 1_000_000
+```
+
+## Find an index whose value is highest
+
+```elixir
+{max_index, max_value} =
+  result
+  |> Map.get("data")
+  |> Enum.with_index()
+  |> Enum.reduce({0, 0}, fn {v, i}, acc ->
+    {_, max_value} = acc
+
+    if v > max_value do
+      {i, v}
+    else
+      acc
+    end
+  end)
+
+{max_index, max_value}
+```
+
+## Prediction result
+
+```elixir
+label_data[max_index]
+```
+
+## Prediction with Bumblebee
+
+```elixir
+{:ok, resnet} = Bumblebee.load_model({:hf, "microsoft/resnet-50"})
+{:ok, featurizer} = Bumblebee.load_featurizer({:hf, "microsoft/resnet-50"})
+
+serving = Bumblebee.Vision.image_classification(resnet, featurizer)
+```
+
+```elixir
+Nx.Serving.run(serving, nx_image)
+```
+
+## Benchmark
+
+```elixir
+resnet50_wasm_func = fn ->
+  resnet50_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
+end
+
+resnet50_elixir_func = fn ->
+  serving
+  |> Nx.Serving.run(nx_image)
+end
+
+Benchee.run(%{
+  "Wasm (ResNet50)" => resnet50_wasm_func,
+  "Elixir (ResNet50)" => resnet50_elixir_func
+})
+```
