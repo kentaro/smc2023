@@ -1,3 +1,5 @@
+#!/bin/sh
+
 set -eu
 
 cd wasm-standalone-builder/
