@@ -1,3 +1,2 @@
-mkdir /data/livebook/evaluations
-cd /data/livebook/evaluations
-put *.livemd
+cd /data/livebook
+put -r experiments

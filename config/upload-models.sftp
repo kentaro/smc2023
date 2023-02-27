@@ -1,3 +1,3 @@
-mkdir /data/models
-cd /data/models
-put models/*
+mkdir /data/wasm
+cd /data/wasm
+put wasm/*

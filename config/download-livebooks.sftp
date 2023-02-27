@@ -1,3 +1,2 @@
-mkdir /data/livebook/evaluations
-cd /data/livebook/evaluations
-get *
+cd /data/livebook
+get -r experiments
