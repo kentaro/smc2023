@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Image Prediction using a Standalone Wasm Binary on GCP
+# Image Prediction using a Standalone Wasm Binary on Local Machine
 
 ```elixir
 Mix.install([
@@ -21,16 +21,12 @@ Mix.install([
 
 ## Experimental environment
 
-* Machine: Google Cloud Compute Engine e2-medium (*)
-  * CPU: 2 vCPU (Intel Broadwell)
-  * Architecture: x86/64
-  * Memory: 4GB
-* OS: Debian GNU/Linux 11
+* Machine: MacBook Pro
+  * CPU: M1 Max
+  * Architecture: arm64
+  * Memory: 64GB
+* OS: macOS 13.2.1
 * Runtime: Elixir v1.14.3
-
-This is a cost-optimized type of VM widely used for GCP users.
-
-ref. [Machine families resource and comparison guide  |  Compute Engine Documentation | Google Cloud](https://cloud.google.com/compute/docs/machine-resource#recommendations_for_machine_types)
 
 ## Uploading an image to be predicted
 
@@ -134,7 +130,8 @@ label_data =
 ## Prediction with Wasm binary
 
 ```elixir
-resnet50_wasm = Wasmtube.from_file("/home/antipop/elixir-ml-wasm/wasm/resnet50.wasm")
+resnet50_wasm =
+  Wasmtube.from_file("/Users/antipop/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
 
 result =
   resnet50_wasm
@@ -212,12 +209,12 @@ Benchee.run(%{
 <!-- livebook:{"output":true} -->
 
 ```
-Operating System: Linux
-CPU Information: Intel(R) Xeon(R) CPU @ 2.20GHz
-Number of Available Cores: 2
-Available memory: 3.84 GB
+Operating System: macOS
+CPU Information: Apple M1 Max
+Number of Available Cores: 10
+Available memory: 64 GB
 Elixir 1.14.3
-Erlang 25.2.3
+Erlang 25.2.1
 
 Benchmark suite executing with the following configuration:
 warmup: 2 s
@@ -231,7 +228,7 @@ Estimated total run time: 7 s
 Benchmarking Wasm (ResNet50) ...
 
 Name                      ips        average  deviation         median         99th %
-Wasm (ResNet50)          0.90         1.11 s     ±1.29%         1.10 s         1.13 s
+Wasm (ResNet50)          3.76      265.72 ms     ±0.41%      265.73 ms      267.91 ms
 ```
 
 <!-- livebook:{"output":true} -->
@@ -239,12 +236,12 @@ Wasm (ResNet50)          0.90         1.11 s     ±1.29%         1.10 s         
 ```
 %Benchee.Suite{
   system: %{
-    available_memory: "3.84 GB",
-    cpu_speed: "Intel(R) Xeon(R) CPU @ 2.20GHz",
+    available_memory: "64 GB",
+    cpu_speed: "Apple M1 Max",
     elixir: "1.14.3",
-    erlang: "25.2.3",
-    num_cores: 2,
-    os: :Linux
+    erlang: "25.2.1",
+    num_cores: 10,
+    os: :macOS
   },
   configuration: %Benchee.Configuration{
     parallel: 1,
@@ -283,22 +280,24 @@ Wasm (ResNet50)          0.90         1.11 s     ±1.29%         1.10 s         
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 1106694233.0,
-          ips: 0.9035919499546177,
-          std_dev: 14242745.326263174,
-          std_dev_ratio: 0.012869630022065159,
-          std_dev_ips: 0.011628894086832346,
-          median: 1101673628.0,
-          percentiles: %{50 => 1101673628.0, 99 => 1131811837.0},
+          average: 265715632.57894737,
+          ips: 3.7634217840114763,
+          std_dev: 1081135.410956325,
+          std_dev_ratio: 0.004068768557059233,
+          std_dev_ips: 0.01531249222173766,
+          median: 265729554.0,
+          percentiles: %{50 => 265729554.0, 99 => 267906538.0},
           mode: nil,
-          minimum: 1096564168,
-          maximum: 1131811837,
+          minimum: 264090701,
+          maximum: 267906538,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 5
+          sample_size: 19
         },
-        samples: [1131811837, 1096564168, 1100478985, 1102942547, 1101673628]
+        samples: [264698875, 264984462, 266352019, 267906538, 265810930, 265036587, 264621791,
+         265894764, 265729554, 266593064, 265848722, 265258297, 264928628, 264730126, 264673457,
+         264090701, 267042611, 267418949, 266976944]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
