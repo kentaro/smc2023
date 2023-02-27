@@ -1,0 +1,3 @@
+[submodule "wasm-standalone-builder"]
+	path = wasm-standalone-builder
+	url = git@github.com:kentaro/wasm-standalone-builder.git
