@@ -4,13 +4,17 @@
 
 ## Experimental environment
 
-* Hardware: Raspberry Pi 4 Model B
-* Software: Nerves Livebook
+* Machine: Raspberry Pi 4 Model B
+  * CPU: Cortex-A72 1.5 GHz
+  * Architecture: ARMv8-A
+  * Memory: 4GB
+* OS: Linux (Nerves)
+* Runtime: Elixir v1.14.3
 
 ## Uploading an image to be predicted
 
 ```elixir
-input = Kino.Input.image("IMAGE")
+input = Kino.Input.image("Upload an image to be predicted")
 ```
 
 This is a sample image that is used in this livebook.

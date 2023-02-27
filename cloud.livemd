@@ -1,42 +1,33 @@
-# Image Prediction using a Standalone Wasm Binary of ResNet50 on Nerves - fork
+# Image Prediction using a Standalone Wasm Binary on GCP
 
 ```elixir
 Mix.install(
   [
-    {:bumblebee, "~> 0.1.2"},
     {:nx, "~> 0.4.1"},
-    {:exla, "~> 0.4.1"},
-    {:axon, "~> 0.3.1"},
     {:kino, "~> 0.8.0"},
     {:req, "~> 0.3.5"},
     {:benchee, "~> 1.1.0"},
     {:wasmtube, github: "kentaro/wasmtube", branch: :main}
-  ],
-  config: [
-    nx: [
-      default_backend: EXLA.Backend,
-      default_defn_options: [compiler: EXLA]
-    ]
-  ],
-  system_env: [
-    XLA_TARGET: "cpu"
-  ],
-  # XLA_TARGETの変更で、exlaを再コンパイルしたい時はtrueにする
-  force: true
+  ]
 )
-
-Nx.default_backend()
 ```
 
 ## Experimental environment
 
-* Hardware: Raspberry Pi 4 Model B
-* Software: Nerves Livebook
+* Machine: Google Cloud Compute Engine e2-medium (*)
+  * CPU: 2 vCPU (Intel Broadwell)
+  * Architecture: x86/64
+  * Memory: 4GB
+* OS: Debian GNU/Linux 11
+* Runtime: Elixir v1.14.3
+
+This is a cost-optimized type of VM widely used for GCP users.
+ref. [Machine families resource and comparison guide  |  Compute Engine Documentation | Google Cloud](https://cloud.google.com/compute/docs/machine-resource#recommendations_for_machine_types)
 
 ## Uploading an image to be predicted
 
 ```elixir
-input = Kino.Input.image("IMAGE")
+input = Kino.Input.image("Upload an image to be predicted")
 ```
 
 This is a sample image that is used in this livebook.
@@ -114,19 +105,6 @@ time / 1_000_000
 label_data[max_index]
 ```
 
-## Prediction with Bumblebee
-
-```elixir
-{:ok, resnet} = Bumblebee.load_model({:hf, "microsoft/resnet-50"})
-{:ok, featurizer} = Bumblebee.load_featurizer({:hf, "microsoft/resnet-50"})
-
-serving = Bumblebee.Vision.image_classification(resnet, featurizer)
-```
-
-```elixir
-Nx.Serving.run(serving, nx_image)
-```
-
 ## Benchmark
 
 ```elixir
@@ -135,13 +113,7 @@ resnet50_wasm_func = fn ->
   |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 end
 
-resnet50_elixir_func = fn ->
-  serving
-  |> Nx.Serving.run(nx_image)
-end
-
 Benchee.run(%{
-  "Wasm (ResNet50)" => resnet50_wasm_func,
-  "Elixir (ResNet50)" => resnet50_elixir_func
+  "Wasm (ResNet50)" => resnet50_wasm_func
 })
 ```
