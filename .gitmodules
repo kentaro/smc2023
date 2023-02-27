@@ -1,3 +1,6 @@
 [submodule "wasm-standalone-builder"]
 	path = wasm-standalone-builder
 	url = git@github.com:kentaro/wasm-standalone-builder.git
+[submodule "nerves_livebook"]
+	path = nerves_livebook
+	url = https://github.com/livebook-dev/nerves_livebook.git

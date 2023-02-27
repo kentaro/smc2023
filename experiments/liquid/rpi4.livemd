@@ -1,0 +1,342 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Liquid IoT Apps with Wasm Binaries
+
+## Experimental environment
+
+* Machine: Raspberry Pi 4 Model B
+  * CPU: Cortex-A72 1.5 GHz
+  * Architecture: ARMv8-A
+  * Memory: 4GB
+* OS: Linux (Nerves)
+* Runtime: Elixir v1.14.3
+
+## Dataset
+
+Assume we have an IoT device which:
+
+1. Collects data from a sensor once per second.
+2. Calculate statistics from the data once per minute.
+3. Send the stats to an upper layer (e.g. cloud layer).
+
+The 2nd process is what we would like to look into here. We will implement the process both in Elixir and Wasm and compare the performance.
+
+The data used in the 2nd process consists of 60 values of number as below:
+
+```elixir
+{tensor, key} =
+  Nx.Random.key(42)
+  |> Nx.Random.normal(100, 30.0, shape: {60})
+
+values =
+  tensor
+  |> Nx.to_list()
+  |> Enum.map(&round/1)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+[127, 71, 110, 75, 140, 150, 44, 112, 119, 88, 88, 58, 34, 69, 59, 133, 124, 111, 121, 102, 91, 118,
+ 62, 122, 79, 77, 73, 82, 116, 153, 115, 139, 97, 111, 117, 81, 18, 100, 60, 118, 150, 47, 80, 159,
+ 109, 92, 106, 108, 106, 126, ...]
+```
+
+## Wasm
+
+```elixir
+wasm = Wasmtube.from_file("/data/wasm/liquid.wasm")
+wasm |> Wasmtube.call_function("calc_stats", data: %{values: values})
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{"mean" => 101, "median" => 108}
+```
+
+## Elixir
+
+```elixir
+defmodule Processor do
+  use GenServer
+
+  def start_link(args \\ []) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
+  end
+
+  def init(args) do
+    {:ok, args}
+  end
+
+  def handle_call({:calc_stats, values}, _from, state) do
+    mean = calc_mean(values)
+    median = calc_median(values)
+
+    {:reply, %{mean: mean, median: median}, state}
+  end
+
+  def calc_mean(values) do
+    if length(values) == 0 do
+      0
+    else
+      (Enum.sum(values) / length(values)) |> round()
+    end
+  end
+
+  def calc_median(values) do
+    if length(values) == 0 do
+      0
+    else
+      values = values |> Enum.sort()
+      index = (length(values) / 2) |> round()
+      values |> Enum.at(index)
+    end
+  end
+
+  def calc_stats(pid, values) do
+    GenServer.call(pid, {:calc_stats, values})
+  end
+end
+
+{:ok, pid} = Processor.start_link()
+pid |> Processor.calc_stats(values)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{mean: 101, median: 108}
+```
+
+## Benchmark
+
+```elixir
+wasm_func = fn ->
+  wasm |> Wasmtube.call_function("calc_stats", data: %{values: values})
+end
+
+elixir_func = fn ->
+  pid |> Processor.calc_stats(values)
+end
+
+Benchee.run(%{
+  "Wasm" => wasm_func,
+  "Elixir" => elixir_func
+})
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Error trying to determine erlang version enoent
+Operating System: Linux
+CPU Information: Unrecognized processor
+Number of Available Cores: 4
+Available memory: 3.60 GB
+Elixir 1.14.3
+Erlang ok
+
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 5 s
+memory time: 0 ns
+reduction time: 0 ns
+parallel: 1
+inputs: none specified
+Estimated total run time: 14 s
+
+Benchmarking Elixir ...
+Benchmarking Wasm ...
+
+Name             ips        average  deviation         median         99th %
+Elixir       32.16 K       31.09 μs    ±62.65%       30.35 μs       41.65 μs
+Wasm          4.48 K      223.32 μs    ±19.93%      210.76 μs      415.02 μs
+
+Comparison: 
+Elixir       32.16 K
+Wasm          4.48 K - 7.18x slower +192.23 μs
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%Benchee.Suite{
+  system: %{
+    available_memory: "3.60 GB",
+    cpu_speed: "Unrecognized processor",
+    elixir: "1.14.3",
+    erlang: :ok,
+    num_cores: 4,
+    os: :Linux
+  },
+  configuration: %Benchee.Configuration{
+    parallel: 1,
+    time: 5000000000.0,
+    warmup: 2000000000.0,
+    memory_time: 0.0,
+    reduction_time: 0.0,
+    pre_check: false,
+    formatters: [Benchee.Formatters.Console],
+    percentiles: '2c',
+    print: %{benchmarking: true, configuration: true, fast_warning: true},
+    inputs: nil,
+    save: false,
+    load: false,
+    unit_scaling: :best,
+    assigns: %{},
+    before_each: nil,
+    after_each: nil,
+    before_scenario: nil,
+    after_scenario: nil,
+    measure_function_call_overhead: false,
+    title: nil,
+    profile_after: false
+  },
+  scenarios: [
+    %Benchee.Scenario{
+      name: "Elixir",
+      job_name: "Elixir",
+      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 31092.05393793127,
+          ips: 32162.558382160572,
+          std_dev: 19477.910259518576,
+          std_dev_ratio: 0.6264594258842506,
+          std_dev_ips: 20148.537859057004,
+          median: 30352.0,
+          percentiles: %{50 => 30352.0, 99 => 41648.0},
+          mode: 30278,
+          minimum: 29796,
+          maximum: 4728558,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 147095
+        },
+        samples: [142241, 35426, 48315, 31037, 57797, 39241, 32500, 43630, 37296, 32370, 37223,
+         31241, 36167, 30389, 30500, 30352, 30407, 35629, 30371, 30574, 30370, 30259, 35315, 30278,
+         30370, 30556, 30352, 35537, 30186, 30593, 30408, 30593, 35482, ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    },
+    %Benchee.Scenario{
+      name: "Wasm",
+      job_name: "Wasm",
+      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 223322.50765654907,
+          ips: 4477.828994907734,
+          std_dev: 44510.1757928831,
+          std_dev_ratio: 0.1993089557338123,
+          std_dev_ips: 892.4714209296468,
+          median: 210760.0,
+          percentiles: %{50 => 210760.0, 99 => 415017.54999999946},
+          mode: [197408, 197723],
+          minimum: 181834,
+          maximum: 1364857,
+          relative_more: 7.182623190554262,
+          relative_less: 0.13922490063450385,
+          absolute_difference: 192230.4537186178,
+          sample_size: 21942
+        },
+        samples: [488780, 244871, 211464, 295408, 219260, 215964, 198982, 198501, 237945, 262019,
+         220037, 208538, 228001, 199205, 232964, 221186, 216908, 212705, 200964, 216168, 223557,
+         236501, 205741, 204075, 191686, 190168, 238131, 228353, 233649, 216501, 266946, 252742,
+         ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    }
+  ]
+}
+```

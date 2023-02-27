@@ -1,2 +1,9 @@
-cd /data/livebook
-put -r experiments
+mkdir /data/livebook/experiments
+
+mkdir /data/livebook/experiments/isomorphic
+cd /data/livebook/experiments/isomorphic
+put -pr experiments/isomorphic/*
+
+mkdir /data/livebook/experiments/liquid
+cd /data/livebook/experiments/liquid
+put -pr experiments/liquid/*
