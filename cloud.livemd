@@ -3,8 +3,9 @@
 ```elixir
 Mix.install(
   [
-    {:nx, "~> 0.4.1"},
-    {:kino, "~> 0.8.0"},
+    {:nx, "~> 0.5.1"},
+    {:nx_image, "~> 0.1.0"},
+    {:kino, "~> 0.8.1"},
     {:req, "~> 0.3.5"},
     {:benchee, "~> 1.1.0"},
     {:wasmtube, github: "kentaro/wasmtube", branch: :main}
@@ -22,6 +23,7 @@ Mix.install(
 * Runtime: Elixir v1.14.3
 
 This is a cost-optimized type of VM widely used for GCP users.
+
 ref. [Machine families resource and comparison guide  |  Compute Engine Documentation | Google Cloud](https://cloud.google.com/compute/docs/machine-resource#recommendations_for_machine_types)
 
 ## Uploading an image to be predicted
@@ -69,14 +71,11 @@ label_data =
 
 ```elixir
 resnet50_wasm =
-  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/models/resnet50.wasm")
+  Wasmtube.from_file("/home/antipop/elixir-ml-wasm/wasm/resnet50.wasm")
 
-resnet50_wasm
-|> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
-```
-
-```elixir
-time / 1_000_000
+result =
+  resnet50_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 ```
 
 ## Find an index whose value is highest
