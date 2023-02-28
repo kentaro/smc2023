@@ -16,8 +16,8 @@
 Assume we have an IoT device which:
 
 1. Collects data from a sensor once per second.
-2. Calculate statistics from the data once per minute.
-3. Send the stats to an upper layer (e.g. cloud layer).
+2. Calculates statistics from the data once per minute.
+3. Sends the stats to an upper layer (e.g. cloud layer).
 
 The 2nd process is what we would like to look into here. We will implement the process both in Elixir and Wasm and compare the performance.
 
@@ -153,7 +153,7 @@ Name             ips        average  deviation         median         99th %
 Elixir       32.16 K       31.09 μs    ±62.65%       30.35 μs       41.65 μs
 Wasm          4.48 K      223.32 μs    ±19.93%      210.76 μs      415.02 μs
 
-Comparison: 
+Comparison:
 Elixir       32.16 K
 Wasm          4.48 K - 7.18x slower +192.23 μs
 ```
