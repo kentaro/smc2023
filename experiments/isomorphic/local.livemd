@@ -1,4 +1,4 @@
-<!-- livebook:{"persist_outputs":true} -->
+<!-- livebook:{"app_settings":{"slug":"antipop"},"persist_outputs":true} -->
 
 # Image Prediction using a Standalone Wasm Binary on Local Machine
 
@@ -16,16 +16,153 @@ Mix.install([
 <!-- livebook:{"output":true} -->
 
 ```
+* Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
+remote: Enumerating objects: 945, done.        
+remote: Counting objects: 100% (168/168), done.        
+remote: Compressing objects: 100% (99/99), done.        
+remote: Total 945 (delta 63), reused 134 (delta 41), pack-reused 777        
+Resolving Hex dependencies...
+Resolution completed in 0.139s
+New:
+  benchee 1.1.0
+  castore 0.1.22
+  complex 0.5.0
+  deep_merge 1.0.0
+  file_system 0.2.10
+  finch 0.14.0
+  hpax 0.1.2
+  jason 1.4.0
+  kino 0.8.1
+  mime 2.0.3
+  mint 1.5.0
+  nimble_options 0.5.2
+  nimble_pool 0.2.6
+  nx 0.5.1
+  nx_image 0.1.0
+  req 0.3.5
+  rustler_precompiled 0.5.5
+  statistex 1.0.0
+  table 0.1.2
+  telemetry 1.2.1
+  wasmex 0.8.2
+* Getting nx (Hex package)
+* Getting nx_image (Hex package)
+* Getting kino (Hex package)
+* Getting req (Hex package)
+* Getting benchee (Hex package)
+* Getting wasmex (Hex package)
+* Getting jason (Hex package)
+* Getting file_system (Hex package)
+* Getting rustler_precompiled (Hex package)
+* Getting castore (Hex package)
+* Getting deep_merge (Hex package)
+* Getting statistex (Hex package)
+* Getting finch (Hex package)
+* Getting mime (Hex package)
+* Getting mint (Hex package)
+* Getting nimble_options (Hex package)
+* Getting nimble_pool (Hex package)
+* Getting telemetry (Hex package)
+* Getting hpax (Hex package)
+* Getting table (Hex package)
+* Getting complex (Hex package)
+
+22:45:44.197 [info] Compiling file system watcher for Mac...
+
+22:45:45.148 [info] Done.
+==> file_system
+Compiling 7 files (.ex)
+Generated file_system app
+==> deep_merge
+Compiling 2 files (.ex)
+Generated deep_merge app
+==> table
+Compiling 5 files (.ex)
+Generated table app
+==> mime
+Compiling 1 file (.ex)
+Generated mime app
+==> nimble_options
+Compiling 3 files (.ex)
+Generated nimble_options app
+===> Analyzing applications...
+===> Compiling telemetry
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> statistex
+Compiling 3 files (.ex)
+Generated statistex app
+==> hpax
+Compiling 4 files (.ex)
+Generated hpax app
+==> complex
+Compiling 2 files (.ex)
+Generated complex app
+==> nx
+Compiling 31 files (.ex)
+Generated nx app
+==> nx_image
+Compiling 1 file (.ex)
+warning: Nx.Defn.Kernel.transform/2 is deprecated. Use deftransform/2 or deftransformp/2 from Nx.Defn instead
+Invalid call found at 7 locations:
+  lib/nx_image.ex:67: NxImage."__defn:center_crop_n__"/2
+  lib/nx_image.ex:163: NxImage."__defn:resize_n__"/2
+  lib/nx_image.ex:202: NxImage."__defn:spatial_axes__"/2
+  lib/nx_image.ex:232: NxImage."__defn:resize_nearest__"/3
+  lib/nx_image.ex:257: NxImage."__defn:resize_with_kernel__"/4
+  lib/nx_image.ex:307: NxImage."__defn:reorder_axis__"/3
+  lib/nx_image.ex:351: NxImage."__defn:resize_short_n__"/2
+
+Generated nx_image app
+==> kino
+Compiling 37 files (.ex)
+Generated kino app
+==> nimble_pool
+Compiling 2 files (.ex)
+Generated nimble_pool app
+==> benchee
+Compiling 44 files (.ex)
+Generated benchee app
+==> castore
+Compiling 1 file (.ex)
+Generated castore app
+==> rustler_precompiled
+Compiling 4 files (.ex)
+Generated rustler_precompiled app
+==> wasmex
+Compiling 14 files (.ex)
+
+22:45:52.099 [debug] Copying NIF from cache and extracting to /Users/kentaro/Library/Caches/mix/installs/elixir-1.14.3-erts-13.1.5/910aa37ed68d5a17f1379f97c568e2b5/_build/rpi4_prod/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-aarch64-apple-darwin.so
+Generated wasmex app
+==> wasmtube
+Compiling 4 files (.ex)
+Generated wasmtube app
+==> mint
+Compiling 1 file (.erl)
+Compiling 19 files (.ex)
+Generated mint app
+==> finch
+Compiling 13 files (.ex)
+Generated finch app
+==> req
+Compiling 5 files (.ex)
+Generated req app
+```
+
+<!-- livebook:{"output":true} -->
+
+```
 :ok
 ```
 
 ## Experimental environment
 
-* Machine: MacBook Pro
-  * CPU: M1 Max
+* Machine: iMac
+  * CPU: M1
   * Architecture: arm64
-  * Memory: 64GB
-* OS: macOS 13.2.1
+  * Memory: 16GB
+* OS: macOS 13.2
 * Runtime: Elixir v1.14.3
 
 ## Uploading an image to be predicted
@@ -127,13 +264,13 @@ label_data =
 }
 ```
 
-## Prediction with Wasm binary
+## Prediction with Wasm binary (ResNet50)
 
 ```elixir
 resnet50_wasm =
-  Wasmtube.from_file("/Users/antipop/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
+  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
 
-result =
+resnet50_result =
   resnet50_wasm
   |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 ```
@@ -155,36 +292,84 @@ result =
 }
 ```
 
+## Prediction with Wasm binary (MobileNet2)
+
+```elixir
+mobilenetv2_wasm =
+  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm")
+
+mobilenetv2_result =
+  mobilenetv2_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{
+  "data" => [-2.9272294, -6.9886975, -3.4781256, -6.5197406, -5.079295, -2.939178, -3.6940205,
+   1.2186813, 6.1876426, 2.8756125, -1.5650505, 0.40949318, 0.7039441, -2.9523182, -1.2515951,
+   -3.3379555, -3.3519793, -1.4937574, -0.956601, -2.303063, -4.6055946, 0.48778173, 0.21371013,
+   1.5368593, -0.48593968, -5.9181027, -6.4475255, -5.8687377, -6.2086544, -9.242665, -2.5257566,
+   -4.0419445, -4.70027, -5.198278, -6.680466, -4.3889465, -3.2650526, -1.9704617, -2.3872275,
+   -2.0531871, -2.6466992, -4.6954436, -4.2617893, -1.6960688, -4.7365513, -5.465204, -4.686872,
+   -2.6651733, -4.0335364, ...],
+  "dtype" => "FP32",
+  "shape" => [1, 1000],
+  "strides" => nil
+}
+```
+
 ## Find an index whose value is highest
 
 ```elixir
-{max_index, max_value} =
-  result
-  |> Map.get("data")
-  |> Enum.with_index()
-  |> Enum.reduce({0, 0}, fn {v, i}, acc ->
-    {_, max_value} = acc
+find_max = fn result ->
+  {max_index, max_value} =
+    result
+    |> Map.get("data")
+    |> Enum.with_index()
+    |> Enum.reduce({0, 0}, fn {v, i}, acc ->
+      {_, max_value} = acc
 
-    if v > max_value do
-      {i, v}
-    else
-      acc
-    end
-  end)
+      if v > max_value do
+        {i, v}
+      else
+        acc
+      end
+    end)
 
-{max_index, max_value}
+  {max_index, max_value}
+end
+
+{resnet50_max_index, resnet50_max_value} = resnet50_result |> find_max.() |> IO.inspect()
+{mobilenetv2_max_index, mobilenetv2_max_value} = mobilenetv2_result |> find_max.() |> IO.inspect()
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
 {291, 15.836072}
+{291, 16.522993}
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{291, 16.522993}
 ```
 
 ## Prediction result
 
 ```elixir
-label_data[max_index]
+label_data[resnet50_max_index] |> IO.inspect()
+label_data[mobilenetv2_max_index] |> IO.inspect()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"\"lion, king of beasts, Panthera leo\""
+"\"lion, king of beasts, Panthera leo\""
 ```
 
 <!-- livebook:{"output":true} -->
@@ -201,8 +386,14 @@ resnet50_wasm_func = fn ->
   |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 end
 
+mobilenetv2_wasm_func = fn ->
+  mobilenetv2_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
+end
+
 Benchee.run(%{
-  "Wasm (ResNet50)" => resnet50_wasm_func
+  "Wasm (ResNet50)" => resnet50_wasm_func,
+  "Wasm (MobileNetV2)" => mobilenetv2_wasm_func
 })
 ```
 
@@ -210,11 +401,11 @@ Benchee.run(%{
 
 ```
 Operating System: macOS
-CPU Information: Apple M1 Max
-Number of Available Cores: 10
-Available memory: 64 GB
+CPU Information: Apple M1
+Number of Available Cores: 8
+Available memory: 16 GB
 Elixir 1.14.3
-Erlang 25.2.1
+Erlang 25.2.3
 
 Benchmark suite executing with the following configuration:
 warmup: 2 s
@@ -223,12 +414,18 @@ memory time: 0 ns
 reduction time: 0 ns
 parallel: 1
 inputs: none specified
-Estimated total run time: 7 s
+Estimated total run time: 14 s
 
+Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
-Name                      ips        average  deviation         median         99th %
-Wasm (ResNet50)          3.76      265.72 ms     ±0.41%      265.73 ms      267.91 ms
+Name                         ips        average  deviation         median         99th %
+Wasm (MobileNetV2)         18.28       54.72 ms    ±14.55%       53.66 ms      129.74 ms
+Wasm (ResNet50)             3.65      273.70 ms     ±0.30%      273.49 ms      276.61 ms
+
+Comparison: 
+Wasm (MobileNetV2)         18.28
+Wasm (ResNet50)             3.65 - 5.00x slower +218.99 ms
 ```
 
 <!-- livebook:{"output":true} -->
@@ -236,11 +433,11 @@ Wasm (ResNet50)          3.76      265.72 ms     ±0.41%      265.73 ms      267
 ```
 %Benchee.Suite{
   system: %{
-    available_memory: "64 GB",
-    cpu_speed: "Apple M1 Max",
+    available_memory: "16 GB",
+    cpu_speed: "Apple M1",
     elixir: "1.14.3",
-    erlang: "25.2.1",
-    num_cores: 10,
+    erlang: "25.2.3",
+    num_cores: 8,
     os: :macOS
   },
   configuration: %Benchee.Configuration{
@@ -268,6 +465,78 @@ Wasm (ResNet50)          3.76      265.72 ms     ±0.41%      265.73 ms      267
   },
   scenarios: [
     %Benchee.Scenario{
+      name: "Wasm (MobileNetV2)",
+      job_name: "Wasm (MobileNetV2)",
+      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 54715182.89130435,
+          ips: 18.276462713952213,
+          std_dev: 7958787.760178912,
+          std_dev_ratio: 0.14545848774716913,
+          std_dev_ips: 2.6584666277390117,
+          median: 53657074.0,
+          percentiles: %{50 => 53657074.0, 99 => 129743879.0},
+          mode: nil,
+          minimum: 52925837,
+          maximum: 129743879,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 92
+        },
+        samples: [53380592, 53181090, 53329967, 53507343, 53419676, 53706344, 53346925, 54119058,
+         54243642, 54168433, 54191600, 53475634, 53755178, 53496510, 53701886, 53444884, 53318508,
+         54996108, 53890056, 53237756, 52925837, 53485051, 53254424, 53283424, 53598635, 53295216,
+         53098756, 54000181, 53787887, 53313007, 53702596, 53300174, 53454676, ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    },
+    %Benchee.Scenario{
       name: "Wasm (ResNet50)",
       job_name: "Wasm (ResNet50)",
       function: #Function<43.3316493/0 in :erl_eval.expr/6>,
@@ -280,24 +549,24 @@ Wasm (ResNet50)          3.76      265.72 ms     ±0.41%      265.73 ms      267
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 265715632.57894737,
-          ips: 3.7634217840114763,
-          std_dev: 1081135.410956325,
-          std_dev_ratio: 0.004068768557059233,
-          std_dev_ips: 0.01531249222173766,
-          median: 265729554.0,
-          percentiles: %{50 => 265729554.0, 99 => 267906538.0},
+          average: 273701960.84210527,
+          ips: 3.6536091919958356,
+          std_dev: 809440.1379696726,
+          std_dev_ratio: 0.0029573779284563727,
+          std_dev_ips: 0.010805103183613806,
+          median: 273485401.0,
+          percentiles: %{50 => 273485401.0, 99 => 276605600.0},
           mode: nil,
-          minimum: 264090701,
-          maximum: 267906538,
-          relative_more: nil,
-          relative_less: nil,
-          absolute_difference: nil,
+          minimum: 272939396,
+          maximum: 276605600,
+          relative_more: 5.002303682066345,
+          relative_less: 0.19990789515340285,
+          absolute_difference: 218986777.95080093,
           sample_size: 19
         },
-        samples: [264698875, 264984462, 266352019, 267906538, 265810930, 265036587, 264621791,
-         265894764, 265729554, 266593064, 265848722, 265258297, 264928628, 264730126, 264673457,
-         264090701, 267042611, 267418949, 266976944]
+        samples: [272939396, 273331525, 273863197, 273466818, 273605444, 273534403, 273720112,
+         274381452, 273330567, 273387275, 273394609, 276605600, 274227201, 274163783, 273142899,
+         273669403, 273134149, 273485401, 272954022]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{

@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Image Prediction using a Standalone Wasm Binary of ResNet50 on Nerves
+# Image Prediction using a Standalone Wasm Binary on Nerves
 
 ## Experimental environment
 
@@ -27,15 +27,15 @@ This is a sample image that is used in this livebook.
 ```elixir
 image = input |> Kino.Input.read()
 
-resized_image =
-  image
-  |> Map.get(:data)
+nx_image =
+  image.data
   |> Nx.from_binary(:u8)
   |> Nx.reshape({image.height, image.width, 3})
   |> NxImage.resize({224, 224}, method: :nearest)
-  |> Kino.Image.new()
 
-resized_image
+kino_image =
+  nx_image
+  |> Kino.Image.new()
 ```
 
 ## Preparing label data
@@ -110,16 +110,14 @@ label_data =
 }
 ```
 
-## Executing a prediction
+## Prediction with Wasm binary (ResNet50)
 
 ```elixir
-predict = fn ->
-  Wasmtube.from_file("/data/models/resnet50.wasm")
-  |> Wasmtube.call_function("predict", image: resized_image.content, width: 224, height: 224)
-end
+resnet50_wasm = Wasmtube.from_file("/data/wasm/resnet50.wasm")
 
-{time, result} = :timer.tc(predict)
-result
+resnet50_result =
+  resnet50_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 ```
 
 <!-- livebook:{"output":true} -->
@@ -139,50 +137,317 @@ result
 }
 ```
 
+## Prediction with Wasm binary (MobileNet2)
+
 ```elixir
-time / 1_000_000
+mobilenetv2_wasm = Wasmtube.from_file("/data/wasm/mobilenetv2.wasm")
+
+mobilenetv2_result =
+  mobilenetv2_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-4.928086
+%{
+  "data" => [-2.9272294, -6.9886975, -3.4781256, -6.5197406, -5.079295, -2.939178, -3.6940205,
+   1.2186813, 6.1876426, 2.8756125, -1.5650505, 0.40949318, 0.7039441, -2.9523182, -1.2515951,
+   -3.3379555, -3.3519793, -1.4937574, -0.956601, -2.303063, -4.6055946, 0.48778173, 0.21371013,
+   1.5368593, -0.48593968, -5.9181027, -6.4475255, -5.8687377, -6.2086544, -9.242665, -2.5257566,
+   -4.0419445, -4.70027, -5.198278, -6.680466, -4.3889465, -3.2650526, -1.9704617, -2.3872275,
+   -2.0531871, -2.6466992, -4.6954436, -4.2617893, -1.6960688, -4.7365513, -5.465204, -4.686872,
+   -2.6651733, -4.0335364, ...],
+  "dtype" => "FP32",
+  "shape" => [1, 1000],
+  "strides" => nil
+}
 ```
 
 ## Find an index whose value is highest
 
 ```elixir
-{max_index, max_value} =
-  result
-  |> Map.get("data")
-  |> Enum.with_index()
-  |> Enum.reduce({0, 0}, fn {v, i}, acc ->
-    {_, max_value} = acc
+find_max = fn result ->
+  {max_index, max_value} =
+    result
+    |> Map.get("data")
+    |> Enum.with_index()
+    |> Enum.reduce({0, 0}, fn {v, i}, acc ->
+      {_, max_value} = acc
 
-    if v > max_value do
-      {i, v}
-    else
-      acc
-    end
-  end)
+      if v > max_value do
+        {i, v}
+      else
+        acc
+      end
+    end)
 
-{max_index, max_value}
+  {max_index, max_value}
+end
+
+{resnet50_max_index, resnet50_max_value} = resnet50_result |> find_max.() |> IO.inspect()
+{mobilenetv2_max_index, mobilenetv2_max_value} = mobilenetv2_result |> find_max.() |> IO.inspect()
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
 {291, 15.836072}
+{291, 16.522993}
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{291, 16.522993}
 ```
 
 ## Prediction result
 
 ```elixir
-label_data[max_index]
+label_data[resnet50_max_index] |> IO.inspect()
+label_data[mobilenetv2_max_index] |> IO.inspect()
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
 "\"lion, king of beasts, Panthera leo\""
+"\"lion, king of beasts, Panthera leo\""
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"\"lion, king of beasts, Panthera leo\""
+```
+
+## Benchmark
+
+```elixir
+resnet50_wasm_func = fn ->
+  resnet50_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
+end
+
+mobilenetv2_wasm_func = fn ->
+  mobilenetv2_wasm
+  |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
+end
+
+Benchee.run(%{
+  "Wasm (ResNet50)" => resnet50_wasm_func,
+  "Wasm (MobileNetV2)" => mobilenetv2_wasm_func
+})
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Error trying to determine erlang version enoent
+Operating System: Linux
+CPU Information: Unrecognized processor
+Number of Available Cores: 4
+Available memory: 3.60 GB
+Elixir 1.14.3
+Erlang ok
+
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 5 s
+memory time: 0 ns
+reduction time: 0 ns
+parallel: 1
+inputs: none specified
+Estimated total run time: 14 s
+
+Benchmarking Wasm (MobileNetV2) ...
+Benchmarking Wasm (ResNet50) ...
+
+Name                         ips        average  deviation         median         99th %
+Wasm (MobileNetV2)          1.70         0.59 s     ±0.53%         0.59 s         0.59 s
+Wasm (ResNet50)             0.30         3.30 s     ±0.01%         3.30 s         3.30 s
+
+Comparison: 
+Wasm (MobileNetV2)          1.70
+Wasm (ResNet50)             0.30 - 5.62x slower +2.72 s
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%Benchee.Suite{
+  system: %{
+    available_memory: "3.60 GB",
+    cpu_speed: "Unrecognized processor",
+    elixir: "1.14.3",
+    erlang: :ok,
+    num_cores: 4,
+    os: :Linux
+  },
+  configuration: %Benchee.Configuration{
+    parallel: 1,
+    time: 5000000000.0,
+    warmup: 2000000000.0,
+    memory_time: 0.0,
+    reduction_time: 0.0,
+    pre_check: false,
+    formatters: [Benchee.Formatters.Console],
+    percentiles: '2c',
+    print: %{benchmarking: true, configuration: true, fast_warning: true},
+    inputs: nil,
+    save: false,
+    load: false,
+    unit_scaling: :best,
+    assigns: %{},
+    before_each: nil,
+    after_each: nil,
+    before_scenario: nil,
+    after_scenario: nil,
+    measure_function_call_overhead: false,
+    title: nil,
+    profile_after: false
+  },
+  scenarios: [
+    %Benchee.Scenario{
+      name: "Wasm (MobileNetV2)",
+      job_name: "Wasm (MobileNetV2)",
+      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 587576518.0,
+          ips: 1.7019059975436255,
+          std_dev: 3089896.020144367,
+          std_dev_ratio: 0.0052587125684698775,
+          std_dev_ips: 0.008949834459636928,
+          median: 588386476.0,
+          percentiles: %{50 => 588386476.0, 99 => 591825716.0},
+          mode: nil,
+          minimum: 580669724,
+          maximum: 591825716,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 9
+        },
+        samples: [586677580, 587305148, 588386476, 591825716, 588598184, 589617936, 586162870,
+         580669724, 588945028]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    },
+    %Benchee.Scenario{
+      name: "Wasm (ResNet50)",
+      job_name: "Wasm (ResNet50)",
+      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 3303985764.0,
+          ips: 0.3026647423532906,
+          std_dev: 270229.34171181335,
+          std_dev_ratio: 8.178889408550531e-5,
+          std_dev_ips: 2.475461455575004e-5,
+          median: 3303985764.0,
+          percentiles: %{50 => 3303985764.0, 99 => 3304176845.0},
+          mode: nil,
+          minimum: 3303794683,
+          maximum: 3304176845,
+          relative_more: 5.623073187550357,
+          relative_less: 0.17783869543331363,
+          absolute_difference: 2716409246.0,
+          sample_size: 2
+        },
+        samples: [3304176845, 3303794683]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    }
+  ]
+}
 ```
