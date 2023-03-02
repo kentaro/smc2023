@@ -38,6 +38,19 @@ pub unsafe extern "C" fn calc_stats(index: *const u8, length: usize) -> i32 {
     store_into_memory(index, stats)
 }
 
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn noop(index: *const u8, length: usize) -> i32 {
+    let slice = unsafe { slice::from_raw_parts(index, length) };
+    let args: Args = serde_json::from_str::<Args>(str::from_utf8(slice).unwrap()).unwrap();
+    let mut _values = args.values;
+
+    // Just return values without calculation for benchmarking
+    let stats = Stats { mean: 0, median: 0 };
+
+    store_into_memory(index, stats)
+}
+
 fn store_into_memory<T: Serialize>(index: *const u8, data: T) -> i32 {
     let out_addr = index as *mut u8;
     let data_vec = serde_json::to_vec(&data).unwrap();
