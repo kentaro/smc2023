@@ -1,0 +1,227 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Dynamic update by reloading an updated Wasm file
+
+```elixir
+Mix.install([
+  {:nx, "~> 0.5.0"},
+  {:wasmtube, github: "kentaro/wasmtube", branch: :main}
+])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+## Sequence of dynamic update by Wasmtube
+
+To enable dynamic update, Wasmtube handles notification of file update and reloads the updated Wasm file. Below is the sequence of dynamic update.
+
+<!-- livebook:{"break_markdown":true} -->
+
+```mermaid
+sequenceDiagram
+  autonumber
+
+  participant Other Host
+
+  box IoT Device
+    participant OS
+    participant App
+    participant Wasmtube
+    participant Wasm Runtime
+  end
+
+  Other Host ->> OS: deploy a Wasm file
+
+  OS ->>+ App: start the app
+
+  App ->> Wasmtube: start Wasmtube <br> worker
+  Wasmtube ->> OS: read the Wasm file
+  Wasmtube ->> Wasm Runtime: init Wasm runtime <br>with the file
+
+  par functions calls
+    App ->> Wasmtube: call a function
+    Wasmtube ->> Wasm Runtime: call a function
+    Wasm Runtime -->> Wasmtube: respond to the call
+    Wasmtube -->> App: respond to the call
+  end
+
+  Other Host ->> OS: deploy a modified <br> Wasm file
+  OS ->> Wasmtube: notify file update
+  Wasmtube ->> OS: re-read the updated Wasm file
+  Wasmtube ->> Wasm Runtime: reboot the runtime <br> with the file
+```
+
+## Prepare a worker to handle file update
+
+You can use `Wasmtube.Worker` for dynamic update.
+
+```elixir
+watch_dir = "/Users/antipop/src/github.com/kentaro/elixir-ml-wasm/wasm"
+old_wasm = "#{watch_dir}/to_be_updated.wasm"
+new_wasm = "#{watch_dir}/update.wasm"
+
+{:ok, worker_pid} =
+  Wasmtube.Worker.start_link(
+    dirs: [Path.absname(watch_dir)],
+    wasm_file: Path.absname(old_wasm)
+  )
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:ok, #PID<0.261.0>}
+```
+
+## Prepare data to be processed by Wasm function
+
+```elixir
+{tensor, key} =
+  Nx.Random.key(42)
+  |> Nx.Random.normal(100, 30.0, shape: {60})
+
+values =
+  tensor
+  |> Nx.to_list()
+  |> Enum.map(&round/1)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+[127, 71, 110, 75, 140, 150, 44, 112, 119, 88, 88, 58, 34, 69, 59, 133, 124, 111, 121, 102, 91, 118,
+ 62, 122, 79, 77, 73, 82, 116, 153, 115, 139, 97, 111, 117, 81, 18, 100, 60, 118, 150, 47, 80, 159,
+ 109, 92, 106, 108, 106, 126, ...]
+```
+
+## Phase 1: Call a function of the Wasm binary
+
+At first, confirm the version and file stats of the Wasm binary as below:
+
+```elixir
+old_version = worker_pid |> GenServer.call(:version)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+0
+```
+
+```elixir
+old_stat = old_wasm |> File.stat!()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%File.Stat{
+  size: 1915581,
+  type: :regular,
+  access: :read_write,
+  atime: {{2023, 3, 3}, {15, 31, 29}},
+  mtime: {{2023, 3, 3}, {15, 30, 55}},
+  ctime: {{2023, 3, 3}, {15, 30, 55}},
+  mode: 33261,
+  links: 1,
+  major_device: 16777231,
+  minor_device: 0,
+  inode: 18950632,
+  uid: 502,
+  gid: 20
+}
+```
+
+Then, call a function of the Wasm binary. Here we get a wrong result due to a wrong code intentionally added.
+
+```elixir
+old_result =
+  worker_pid
+  |> GenServer.call({
+    :call_function,
+    :to_be_updated,
+    data: %{
+      values: values
+    }
+  })
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{"mean" => 101, "median" => 0}
+```
+
+## Phase 2: Call a function of the newly updated Wasm binary
+
+Wasmtube handles notification of file update caused by modification and metadata changes. Here we realize such a file update by just overwrite the old file by `File.copy!/2`. In a real case, a new file will be uploaded from some other machine (e.g. cloud or build machine).
+
+```elixir
+File.copy!(new_wasm, old_wasm)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+1915605
+```
+
+Confirm the version and file stats of the newly updated Wasm binary as below:
+
+```elixir
+new_version = worker_pid |> GenServer.call(:version)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+1
+```
+
+```elixir
+new_stat = old_wasm |> File.stat!()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%File.Stat{
+  size: 1915605,
+  type: :regular,
+  access: :read_write,
+  atime: {{2023, 3, 3}, {15, 32, 16}},
+  mtime: {{2023, 3, 3}, {15, 32, 16}},
+  ctime: {{2023, 3, 3}, {15, 32, 16}},
+  mode: 33261,
+  links: 1,
+  major_device: 16777231,
+  minor_device: 0,
+  inode: 18950632,
+  uid: 502,
+  gid: 20
+}
+```
+
+Call a function of the newly updated Wasm binary. At this time, we get a correct result.
+
+```elixir
+new_result =
+  worker_pid
+  |> GenServer.call({
+    :call_function,
+    :to_be_updated,
+    data: %{
+      values: values
+    }
+  })
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{"mean" => 101, "median" => 108}
+```

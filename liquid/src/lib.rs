@@ -51,6 +51,31 @@ pub unsafe extern "C" fn noop(index: *const u8, length: usize) -> i32 {
     store_into_memory(index, stats)
 }
 
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn to_be_updated(index: *const u8, length: usize) -> i32 {
+    let slice = unsafe { slice::from_raw_parts(index, length) };
+    let args: Args = serde_json::from_str::<Args>(str::from_utf8(slice).unwrap()).unwrap();
+    let mut values = args.values;
+
+    let mean = if values.len() as u32 > 0 {
+        values.iter().sum::<i32>() / values.len() as i32
+    } else {
+        0
+    };
+
+    let median = if values.len() as u32 > 0 {
+        values.sort();
+        let mid = values.len() / 2;
+        values[mid]
+    } else {
+        0
+    };
+
+    let stats = Stats { mean, median };
+    store_into_memory(index, stats)
+}
+
 fn store_into_memory<T: Serialize>(index: *const u8, data: T) -> i32 {
     let out_addr = index as *mut u8;
     let data_vec = serde_json::to_vec(&data).unwrap();
