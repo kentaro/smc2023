@@ -1,4 +1,4 @@
-<!-- livebook:{"persist_outputs":true} -->
+<!-- livebook:{"app_settings":{"slug":"antipop"},"persist_outputs":true} -->
 
 # Dynamic update by reloading an updated Wasm file
 
@@ -15,9 +15,13 @@ Mix.install([
 :ok
 ```
 
-## Sequence of dynamic update by Wasmtube
+## Sequence diagram of function call and dynamic update
 
 To enable dynamic update, Wasmtube handles notification of file update and reloads the updated Wasm file. Below is the sequence of dynamic update.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Function call to Wasm runtime
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -48,11 +52,33 @@ sequenceDiagram
     Wasm Runtime -->> Wasmtube: respond to the call
     Wasmtube -->> App: respond to the call
   end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Update the Wasm file
+
+<!-- livebook:{"break_markdown":true} -->
+
+```mermaid
+sequenceDiagram
+  autonumber
+
+  participant Other Host
+
+  box IoT Device
+    participant OS
+    participant App
+    participant Wasmtube
+    participant Wasm Runtime
+  end
 
   Other Host ->> OS: deploy a modified <br> Wasm file
   OS ->> Wasmtube: notify file update
   Wasmtube ->> OS: re-read the updated Wasm file
   Wasmtube ->> Wasm Runtime: reboot the runtime <br> with the file
+
+  Note over App, Wasm Runtime: snip function call (same above)
 ```
 
 ## Prepare a worker to handle file update
