@@ -94,24 +94,24 @@ sequenceDiagram
 
   box IoT Device
     participant OS
-    participant App
+    participant Elixir App
     participant Wasmtube
-    participant Wasm Runtime
+    participant Wasm Sandbox
   end
 
   Deployer ->> OS: deploys a Wasm file
 
-  OS ->>+ App: starts the app
+  OS ->> Elixir App: starts the app
 
-  App ->> Wasmtube: starts Wasmtube <br> worker
+  Elixir App ->> Wasmtube: starts Wasmtube <br> worker
   Wasmtube ->> OS: reads the Wasm file
-  Wasmtube ->> Wasm Runtime: inits Wasm runtime <br>with the file
+  Wasmtube ->> Wasm Sandbox: instantiates <br> Wasm sandbox <br>with the file
 
   par functions calls
-    App ->> Wasmtube: calls a function
-    Wasmtube ->> Wasm Runtime: delegates the function
-    Wasm Runtime -->> Wasmtube: responds to the call
-    Wasmtube -->> App: delegate the response
+    Elixir App ->> Wasmtube: calls a function
+    Wasmtube ->> Wasm Sandbox: delegates the function
+    Wasm Sandbox -->> Wasmtube: responds to the call
+    Wasmtube -->> Elixir App: delegate the response
   end
 ```
 
@@ -129,17 +129,17 @@ sequenceDiagram
 
   box IoT Device
     participant OS
-    participant App
+    participant Elixir App
     participant Wasmtube
-    participant Wasm Runtime
+    participant Wasm Sandbox
   end
 
-  Deployer ->> OS: deplosy a modified <br> Wasm file
-  OS ->> Wasmtube: notifies file update
+  Deployer ->> OS: deploys a new <br> Wasm file
+  OS ->> Wasmtube: notifies the file updated
   Wasmtube ->> OS: re-reads the updated Wasm file
-  Wasmtube ->> Wasm Runtime: reboots the runtime <br> with the file
+  Wasmtube ->> Wasm Sandbox: re-instantiates <br> the sandbox <br> with the file
 
-  Note over App, Wasm Runtime: snip function call (same above)
+  Note over Elixir App, Wasm Sandbox: snip function call (same above)
 ```
 
 ## Prepare a worker to handle file update
