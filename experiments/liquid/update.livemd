@@ -1,4 +1,4 @@
-<!-- livebook:{"app_settings":{"slug":"antipop"},"persist_outputs":true} -->
+<!-- livebook:{"persist_outputs":true} -->
 
 # Dynamic update by reloading an updated Wasm file
 
@@ -7,6 +7,67 @@ Mix.install([
   {:nx, "~> 0.5.0"},
   {:wasmtube, github: "kentaro/wasmtube", branch: :main}
 ])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+* Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
+remote: Enumerating objects: 987, done.        
+remote: Counting objects: 100% (210/210), done.        
+remote: Compressing objects: 100% (122/122), done.        
+remote: Total 987 (delta 88), reused 170 (delta 59), pack-reused 777        
+Resolving Hex dependencies...
+Resolution completed in 0.072s
+New:
+  castore 0.1.22
+  complex 0.5.0
+  file_system 0.2.10
+  jason 1.4.0
+  nx 0.5.1
+  rustler_precompiled 0.5.5
+  telemetry 1.2.1
+  wasmex 0.8.2
+* Getting nx (Hex package)
+* Getting wasmex (Hex package)
+* Getting jason (Hex package)
+* Getting file_system (Hex package)
+* Getting rustler_precompiled (Hex package)
+* Getting castore (Hex package)
+* Getting complex (Hex package)
+* Getting telemetry (Hex package)
+
+17:42:56.750 [info] Compiling file system watcher for Mac...
+
+17:42:57.970 [info] Done.
+==> file_system
+Compiling 7 files (.ex)
+Generated file_system app
+===> Analyzing applications...
+===> Compiling telemetry
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> complex
+Compiling 2 files (.ex)
+Generated complex app
+==> nx
+Compiling 31 files (.ex)
+Generated nx app
+==> castore
+Compiling 1 file (.ex)
+Generated castore app
+==> rustler_precompiled
+Compiling 4 files (.ex)
+Generated rustler_precompiled app
+==> wasmex
+Compiling 14 files (.ex)
+
+17:43:05.368 [debug] Copying NIF from cache and extracting to /Users/antipop/Library/Caches/mix/installs/elixir-1.14.3-erts-13.1.4/990c64bba7acddd769d09cced2a837ca/_build/rpi4_prod/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-aarch64-apple-darwin.so
+Generated wasmex app
+==> wasmtube
+Compiling 4 files (.ex)
+Generated wasmtube app
 ```
 
 <!-- livebook:{"output":true} -->
@@ -29,7 +90,7 @@ To enable dynamic update, Wasmtube handles notification of file update and reloa
 sequenceDiagram
   autonumber
 
-  participant Other Host
+  participant Deployer
 
   box IoT Device
     participant OS
@@ -38,19 +99,19 @@ sequenceDiagram
     participant Wasm Runtime
   end
 
-  Other Host ->> OS: deploy a Wasm file
+  Deployer ->> OS: deploys a Wasm file
 
-  OS ->>+ App: start the app
+  OS ->>+ App: starts the app
 
-  App ->> Wasmtube: start Wasmtube <br> worker
-  Wasmtube ->> OS: read the Wasm file
-  Wasmtube ->> Wasm Runtime: init Wasm runtime <br>with the file
+  App ->> Wasmtube: starts Wasmtube <br> worker
+  Wasmtube ->> OS: reads the Wasm file
+  Wasmtube ->> Wasm Runtime: inits Wasm runtime <br>with the file
 
   par functions calls
-    App ->> Wasmtube: call a function
-    Wasmtube ->> Wasm Runtime: call a function
-    Wasm Runtime -->> Wasmtube: respond to the call
-    Wasmtube -->> App: respond to the call
+    App ->> Wasmtube: calls a function
+    Wasmtube ->> Wasm Runtime: delegates the function
+    Wasm Runtime -->> Wasmtube: responds to the call
+    Wasmtube -->> App: delegate the response
   end
 ```
 
@@ -64,7 +125,7 @@ sequenceDiagram
 sequenceDiagram
   autonumber
 
-  participant Other Host
+  participant Deployer
 
   box IoT Device
     participant OS
@@ -73,10 +134,10 @@ sequenceDiagram
     participant Wasm Runtime
   end
 
-  Other Host ->> OS: deploy a modified <br> Wasm file
-  OS ->> Wasmtube: notify file update
-  Wasmtube ->> OS: re-read the updated Wasm file
-  Wasmtube ->> Wasm Runtime: reboot the runtime <br> with the file
+  Deployer ->> OS: deplosy a modified <br> Wasm file
+  OS ->> Wasmtube: notifies file update
+  Wasmtube ->> OS: re-reads the updated Wasm file
+  Wasmtube ->> Wasm Runtime: reboots the runtime <br> with the file
 
   Note over App, Wasm Runtime: snip function call (same above)
 ```
@@ -90,17 +151,13 @@ watch_dir = "/Users/antipop/src/github.com/kentaro/elixir-ml-wasm/wasm"
 old_wasm = "#{watch_dir}/to_be_updated.wasm"
 new_wasm = "#{watch_dir}/update.wasm"
 
-{:ok, worker_pid} =
-  Wasmtube.Worker.start_link(
-    dirs: [Path.absname(watch_dir)],
-    wasm_file: Path.absname(old_wasm)
-  )
+{:ok, worker_pid} = Wasmtube.Worker.start_link(wasm_file: old_wasm)
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-{:ok, #PID<0.261.0>}
+{:ok, #PID<0.1268.0>}
 ```
 
 ## Prepare data to be processed by Wasm function
@@ -129,7 +186,7 @@ values =
 At first, confirm the version and file stats of the Wasm binary as below:
 
 ```elixir
-old_version = worker_pid |> GenServer.call(:version)
+old_version = worker_pid |> Wasmtube.Worker.version()
 ```
 
 <!-- livebook:{"output":true} -->
@@ -149,14 +206,14 @@ old_stat = old_wasm |> File.stat!()
   size: 1915581,
   type: :regular,
   access: :read_write,
-  atime: {{2023, 3, 3}, {15, 31, 29}},
-  mtime: {{2023, 3, 3}, {15, 30, 55}},
-  ctime: {{2023, 3, 3}, {15, 30, 55}},
+  atime: {{2023, 3, 3}, {17, 55, 51}},
+  mtime: {{2023, 3, 3}, {17, 55, 48}},
+  ctime: {{2023, 3, 3}, {17, 55, 48}},
   mode: 33261,
   links: 1,
   major_device: 16777231,
   minor_device: 0,
-  inode: 18950632,
+  inode: 18968372,
   uid: 502,
   gid: 20
 }
@@ -167,13 +224,12 @@ Then, call a function of the Wasm binary. Here we get a wrong result due to a wr
 ```elixir
 old_result =
   worker_pid
-  |> GenServer.call({
-    :call_function,
+  |> Wasmtube.Worker.call_function(
     :to_be_updated,
     data: %{
       values: values
     }
-  })
+  )
 ```
 
 <!-- livebook:{"output":true} -->
@@ -199,7 +255,7 @@ File.copy!(new_wasm, old_wasm)
 Confirm the version and file stats of the newly updated Wasm binary as below:
 
 ```elixir
-new_version = worker_pid |> GenServer.call(:version)
+new_version = worker_pid |> Wasmtube.Worker.version()
 ```
 
 <!-- livebook:{"output":true} -->
@@ -219,14 +275,14 @@ new_stat = old_wasm |> File.stat!()
   size: 1915605,
   type: :regular,
   access: :read_write,
-  atime: {{2023, 3, 3}, {15, 32, 16}},
-  mtime: {{2023, 3, 3}, {15, 32, 16}},
-  ctime: {{2023, 3, 3}, {15, 32, 16}},
+  atime: {{2023, 3, 7}, {8, 44, 48}},
+  mtime: {{2023, 3, 7}, {8, 44, 48}},
+  ctime: {{2023, 3, 7}, {8, 44, 48}},
   mode: 33261,
   links: 1,
   major_device: 16777231,
   minor_device: 0,
-  inode: 18950632,
+  inode: 18968372,
   uid: 502,
   gid: 20
 }
@@ -237,13 +293,12 @@ Call a function of the newly updated Wasm binary. At this time, we get a correct
 ```elixir
 new_result =
   worker_pid
-  |> GenServer.call({
-    :call_function,
+  |> Wasmtube.Worker.call_function(
     :to_be_updated,
     data: %{
       values: values
     }
-  })
+  )
 ```
 
 <!-- livebook:{"output":true} -->
