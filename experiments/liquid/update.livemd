@@ -13,10 +13,10 @@ Mix.install([
 
 ```
 * Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
-remote: Enumerating objects: 987, done.        
-remote: Counting objects: 100% (210/210), done.        
-remote: Compressing objects: 100% (122/122), done.        
-remote: Total 987 (delta 88), reused 170 (delta 59), pack-reused 777        
+remote: Enumerating objects: 987, done.
+remote: Counting objects: 100% (210/210), done.
+remote: Compressing objects: 100% (122/122), done.
+remote: Total 987 (delta 88), reused 170 (delta 59), pack-reused 777
 Resolving Hex dependencies...
 Resolution completed in 0.072s
 New:
@@ -88,7 +88,7 @@ To enable dynamic update, Wasmtube handles notification of file update and reloa
 
 ```mermaid
 sequenceDiagram
-  autonumber
+    %%{init:{'theme':'base', 'themeCSS':"text {font-size: 20px !important;} text.sequenceNumber {font-size: 20px !important; } .messageText {font-size: 20px !important;} line.loopLine {stroke-width: 5px !important;} "}}%%
 
   participant Deployer
 
@@ -96,22 +96,28 @@ sequenceDiagram
     participant OS
     participant Elixir App
     participant Wasmtube
+    participant Linear Memory
     participant Wasm Sandbox
   end
 
-  Deployer ->> OS: deploys a Wasm file
+  OS ->> App: (1) starts the app
 
-  OS ->> Elixir App: starts the app
-
-  Elixir App ->> Wasmtube: starts Wasmtube <br> worker
-  Wasmtube ->> OS: reads the Wasm file
-  Wasmtube ->> Wasm Sandbox: instantiates <br> Wasm sandbox <br>with the file
+  App ->> Wasmtube: (2) starts Wasmtube <br> worker
+  Wasmtube ->> OS: (3) reads the Wasm file
+  Wasmtube ->> Wasm Sandbox: (4) instantiates a Wasm sandbox <br> with the Wasm file
+  Wasm Sandbox ->> Linear Memory: (5) creates a new <br> linear memory
+  Wasm Sandbox ->> Wasmtube: (6) finish initialization process
 
   par functions calls
-    Elixir App ->> Wasmtube: calls a function
-    Wasmtube ->> Wasm Sandbox: delegates the function
-    Wasm Sandbox -->> Wasmtube: responds to the call
-    Wasmtube -->> Elixir App: delegate the response
+    App ->> Wasmtube: (7) calls a function
+    Wasmtube ->> Linear Memory: (8) writes argument <br> data to the <br> function
+    Wasmtube ->> Wasm Sandbox: (9) delegates the function
+    Wasm Sandbox ->> Linear Memory: (10) reads the data
+    Wasm Sandbox ->> Wasm Sandbox: (11) processes <br> the data
+    Wasm Sandbox ->> Linear Memory: (12) writes result data
+    Wasm Sandbox ->> Wasmtube: (13) responds to the call
+    Wasmtube ->> Linear Memory: (14) reads the result
+    Wasmtube ->> App: (15) delegates <br> the response
   end
 ```
 
@@ -123,7 +129,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  autonumber
+  %%{init:{'theme':'base', 'themeCSS':"text {font-size: 18px !important;} text.sequenceNumber {font-size: 12px !important;} .messageText {font-size: 18px !important;} line.loopLine {stroke-width: 5px !important;} "}}%%
 
   participant Deployer
 
@@ -134,12 +140,13 @@ sequenceDiagram
     participant Wasm Sandbox
   end
 
-  Deployer ->> OS: deploys a new <br> Wasm file
-  OS ->> Wasmtube: notifies the file updated
-  Wasmtube ->> OS: re-reads the updated Wasm file
-  Wasmtube ->> Wasm Sandbox: re-instantiates <br> the sandbox <br> with the file
+  Deployer ->> OS: (1) deploys <br> a modified <br> Wasm file
+  OS ->> Wasmtube: (2) notifies the <br> file update
+  Wasmtube ->> OS: (3) re-reads <br> the updated <br> Wasm file
+  Wasmtube ->> Wasm Sandbox: (4) discards <br> the old sandbox
+  Wasmtube ->> Wasm Sandbox: (5) re-creates <br> a new sandbox <br> with the file
 
-  Note over Elixir App, Wasm Sandbox: snip function call (same above)
+  Note over Wasmtube, Wasm Sandbox: the process after here <br> is the same above
 ```
 
 ## Prepare a worker to handle file update
