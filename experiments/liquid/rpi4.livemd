@@ -150,12 +150,12 @@ Benchmarking Elixir ...
 Benchmarking Wasm ...
 
 Name             ips        average  deviation         median         99th %
-Elixir       31.68 K       31.57 μs    ±65.05%       30.76 μs       47.04 μs
-Wasm          4.50 K      222.40 μs    ±20.86%      209.94 μs      412.24 μs
+Elixir       32.61 K       30.67 μs    ±68.32%       30.85 μs       43.19 μs
+Wasm          4.02 K      248.99 μs    ±17.01%      235.59 μs      418.97 μs
 
 Comparison: 
-Elixir       31.68 K
-Wasm          4.50 K - 7.04x slower +190.83 μs
+Elixir       32.61 K
+Wasm          4.02 K - 8.12x slower +218.32 μs
 ```
 
 <!-- livebook:{"output":true} -->
@@ -207,24 +207,24 @@ Wasm          4.50 K - 7.04x slower +190.83 μs
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 31568.97974972027,
-          ips: 31676.66512912445,
-          std_dev: 20535.945360195503,
-          std_dev_ratio: 0.6505102642849099,
-          std_dev_ips: 20605.995804811333,
-          median: 30759.0,
-          percentiles: %{50 => 30759.0, 99 => 47037.0},
-          mode: 30722,
-          minimum: 29629,
-          maximum: 4991740,
+          average: 30669.208405540106,
+          ips: 32605.993176509874,
+          std_dev: 20954.131188626,
+          std_dev_ratio: 0.6832302585560321,
+          std_dev_ips: 22277.40114846306,
+          median: 30851.0,
+          percentiles: %{50 => 30851.0, 99 => 43185.0},
+          mode: 30907,
+          minimum: 25481,
+          maximum: 4827839,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 145677
+          sample_size: 148878
         },
-        samples: [134165, 34370, 55185, 32963, 106443, 55962, 33037, 61703, 54981, 32592, 53610,
-         31556, 37055, 30925, 30741, 30574, 30814, 36277, 30611, 31093, 30908, 30833, 36352, 30537,
-         30352, 30259, 30148, 36240, 30870, 30629, 31055, 31036, 35759, ...]
+        samples: [123535, 34611, 51555, 31518, 56277, 37907, 31981, 43462, 36610, 32129, 37314,
+         31370, 36573, 30703, 30704, 30666, 30573, 36129, 30963, 30832, 30796, 30684, 36037, 30611,
+         30758, 30518, 30851, 35870, 30722, 30407, 30814, 30500, 35944, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -278,24 +278,24 @@ Wasm          4.50 K - 7.04x slower +190.83 μs
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 222401.20205821018,
-          ips: 4496.378575050439,
-          std_dev: 46391.509409265745,
-          std_dev_ratio: 0.20859378897207337,
-          std_dev_ips: 937.9166436226233,
-          median: 209943.0,
-          percentiles: %{50 => 209943.0, 99 => 412243.99999999965},
-          mode: 197906,
-          minimum: 182388,
-          maximum: 1413212,
-          relative_more: 7.044928401912667,
-          relative_less: 0.1419460841828434,
-          absolute_difference: 190832.2223084899,
-          sample_size: 22058
+          average: 248985.3907153729,
+          ips: 4016.2999006762925,
+          std_dev: 42356.201839268244,
+          std_dev_ratio: 0.17011520924007803,
+          std_dev_ips: 683.2336979744521,
+          median: 235589.0,
+          percentiles: %{50 => 235589.0, 99 => 418974.5399999999},
+          mode: 223034,
+          minimum: 209775,
+          maximum: 1163095,
+          relative_more: 8.118415950716093,
+          relative_less: 0.12317673867299124,
+          absolute_difference: 218316.18230983277,
+          sample_size: 19710
         },
-        samples: [453460, 267942, 222905, 246295, 221368, 217943, 203961, 193314, 228258, 246554,
-         216887, 220628, 196961, 195832, 233350, 206220, 246128, 224813, 205239, 203999, 231776,
-         209442, 210869, 206405, 203776, 204572, 241054, 230480, 229017, 204331, 196128, 198387,
+        samples: [458864, 295163, 390643, 871321, 454808, 337366, 258663, 247033, 239663, 228423,
+         240126, 238663, 232256, 233515, 237700, 219479, 267552, 248608, 227034, 232553, 232923,
+         236978, 280015, 243960, 228923, 234386, 234274, 223589, 251829, 236682, 229015, 225405,
          ...]
       },
       memory_usage_data: %Benchee.CollectionData{
@@ -389,12 +389,12 @@ Benchmarking Wasm with calculation ...
 Benchmarking Wasm without calculation ...
 
 Name                               ips        average  deviation         median         99th %
-Wasm without calculation        4.69 K      213.22 μs    ±16.94%      203.96 μs      353.53 μs
-Wasm with calculation           3.79 K      263.95 μs    ±22.63%      249.61 μs      419.44 μs
+Wasm without calculation        4.12 K      242.53 μs    ±16.06%      229.93 μs      387.65 μs
+Wasm with calculation           3.75 K      266.92 μs    ±17.52%      255.87 μs      402.57 μs
 
 Comparison: 
-Wasm without calculation        4.69 K
-Wasm with calculation           3.79 K - 1.24x slower +50.74 μs
+Wasm without calculation        4.12 K
+Wasm with calculation           3.75 K - 1.10x slower +24.39 μs
 ```
 
 <!-- livebook:{"output":true} -->
@@ -446,25 +446,25 @@ Wasm with calculation           3.79 K - 1.24x slower +50.74 μs
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 213215.6685512982,
-          ips: 4690.086834586488,
-          std_dev: 36128.419016545,
-          std_dev_ratio: 0.1694454223839218,
-          std_dev_ips: 794.7137447037783,
-          median: 203962.0,
-          percentiles: %{50 => 203962.0, 99 => 353530.16000000073},
-          mode: [188091, 188443],
-          minimum: 176369,
-          maximum: 1566025,
+          average: 242526.46199466244,
+          ips: 4123.261403211366,
+          std_dev: 38950.82792448355,
+          std_dev_ratio: 0.16060444540415053,
+          std_dev_ips: 662.2141109191009,
+          median: 229925.5,
+          percentiles: %{50 => 229925.5, 99 => 387645.20000000024},
+          mode: 212259,
+          minimum: 202666,
+          maximum: 1037592,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 22993
+          sample_size: 20234
         },
-        samples: [559996, 250147, 206943, 354664, 243128, 214998, 197628, 203461, 222035, 205720,
-         202295, 191554, 190369, 219499, 200554, 200388, 198628, 191369, 223610, 215554, 199332,
-         215591, 203962, 223443, 201499, 199702, 184406, 188406, 231332, 256665, 245757, 220110,
-         210943, ...]
+        samples: [495222, 281500, 257796, 231889, 275426, 270537, 271518, 240222, 240852, 242481,
+         232204, 249426, 298815, 276463, 238278, 235759, 243667, 224093, 242611, 284703, 298778,
+         246259, 270425, 244814, 229944, 263870, 262056, 289740, 256296, 246073, 246148, 232000,
+         265073, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -518,24 +518,24 @@ Wasm with calculation           3.79 K - 1.24x slower +50.74 μs
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 263954.5961166093,
-          ips: 3788.530356024648,
-          std_dev: 59722.439544515575,
-          std_dev_ratio: 0.2262602751502441,
-          std_dev_ips: 857.1939207691892,
-          median: 249610.0,
-          percentiles: %{50 => 249610.0, 99 => 419442.9199999998},
-          mode: [239387, 238628, 237739],
-          minimum: 218054,
-          maximum: 4630892,
-          relative_more: 1.2379699761751028,
-          relative_less: 0.8077740326866831,
-          absolute_difference: 50738.92756531108,
-          sample_size: 18592
+          average: 266920.25664727314,
+          ips: 3746.4372789116155,
+          std_dev: 46759.89300355243,
+          std_dev_ratio: 0.17518300630642725,
+          std_dev_ips: 656.3121454582076,
+          median: 255867.0,
+          percentiles: %{50 => 255867.0, 99 => 402571.99999999907},
+          mode: 235571,
+          minimum: 225682,
+          maximum: 4314020,
+          relative_more: 1.1005819919689734,
+          relative_less: 0.9086101783393444,
+          absolute_difference: 24393.794652610697,
+          sample_size: 18391
         },
-        samples: [463978, 280017, 251424, 275665, 331923, 290238, 256517, 256887, 427848, 302738,
-         267313, 263183, 236813, 279183, 285016, 254776, 252016, 247184, 237776, 237850, 275127,
-         251350, 384701, 308479, 263646, 261813, 295813, 253924, 268423, 269720, 244683, 239332,
+        samples: [465679, 345959, 311255, 260459, 277071, 289885, 297552, 322922, 300274, 262497,
+         269792, 335755, 262553, 266700, 278700, 256848, 308478, 283052, 322255, 258127, 264312,
+         250774, 270163, 275145, 263626, 257256, 272756, 248108, 272589, 308700, 308033, 273570,
          ...]
       },
       memory_usage_data: %Benchee.CollectionData{
@@ -581,4 +581,8 @@ Wasm with calculation           3.79 K - 1.24x slower +50.74 μs
 }
 ```
 
-`calc_stats` is 1.24x (50.74 μs) slower than `noop` function. The difference of elapsed time between both functions is relatively small compared to whole of execution time. It is to say the bottleneck of executing Wasm binaries lays on the process of data passing to/from Wasm runtime.
+The `calc_stats` function was 24.39μs slower than the `noop` function in an average value comparison.
+
+* A large portion of the overhead is due to data passing between Elixir and Wasm.
+* The difference between the two functions accounts for only about 10% of the total calculation.
+* Therefore, the more complex the calculation process becomes, the relatively smaller the difference becomes.
