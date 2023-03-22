@@ -265,12 +265,12 @@ Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
 Name                         ips        average  deviation         median         99th %
-Wasm (MobileNetV2)          1.70         0.59 s     ±0.53%         0.59 s         0.59 s
-Wasm (ResNet50)             0.30         3.30 s     ±0.01%         3.30 s         3.30 s
+Wasm (MobileNetV2)          1.70         0.59 s     ±0.15%         0.59 s         0.59 s
+Wasm (ResNet50)             0.30         3.30 s     ±0.04%         3.30 s         3.30 s
 
 Comparison: 
 Wasm (MobileNetV2)          1.70
-Wasm (ResNet50)             0.30 - 5.62x slower +2.72 s
+Wasm (ResNet50)             0.30 - 5.61x slower +2.72 s
 ```
 
 <!-- livebook:{"output":true} -->
@@ -322,23 +322,23 @@ Wasm (ResNet50)             0.30 - 5.62x slower +2.72 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 587576518.0,
-          ips: 1.7019059975436255,
-          std_dev: 3089896.020144367,
-          std_dev_ratio: 0.0052587125684698775,
-          std_dev_ips: 0.008949834459636928,
-          median: 588386476.0,
-          percentiles: %{50 => 588386476.0, 99 => 591825716.0},
+          average: 588462806.1111112,
+          ips: 1.6993427445458364,
+          std_dev: 873275.2959637706,
+          std_dev_ratio: 0.0014839940381871513,
+          std_dev_ips: 0.0025218145017426126,
+          median: 588778565.0,
+          percentiles: %{50 => 588778565.0, 99 => 589153635.0},
           mode: nil,
-          minimum: 580669724,
-          maximum: 591825716,
+          minimum: 586504774,
+          maximum: 589153635,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
           sample_size: 9
         },
-        samples: [586677580, 587305148, 588386476, 591825716, 588598184, 589617936, 586162870,
-         580669724, 588945028]
+        samples: [589153635, 588673316, 588856260, 588778565, 588576387, 586504774, 588974827,
+         589090941, 587556550]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -392,22 +392,22 @@ Wasm (ResNet50)             0.30 - 5.62x slower +2.72 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 3303985764.0,
-          ips: 0.3026647423532906,
-          std_dev: 270229.34171181335,
-          std_dev_ratio: 8.178889408550531e-5,
-          std_dev_ips: 2.475461455575004e-5,
-          median: 3303985764.0,
-          percentiles: %{50 => 3303985764.0, 99 => 3304176845.0},
+          average: 3303843442.0,
+          ips: 0.30267778045640215,
+          std_dev: 1362942.6638828209,
+          std_dev_ratio: 4.1253246039338836e-4,
+          std_dev_ips: 1.248644094780894e-4,
+          median: 3303843442.0,
+          percentiles: %{50 => 3303843442.0, 99 => 3304807188.0},
           mode: nil,
-          minimum: 3303794683,
-          maximum: 3304176845,
-          relative_more: 5.623073187550357,
-          relative_less: 0.17783869543331363,
-          absolute_difference: 2716409246.0,
+          minimum: 3302879696,
+          maximum: 3304807188,
+          relative_more: 5.614362382278043,
+          relative_less: 0.17811461603485726,
+          absolute_difference: 2715380635.888889,
           sample_size: 2
         },
-        samples: [3304176845, 3303794683]
+        samples: [3304807188, 3302879696]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
