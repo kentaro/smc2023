@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Liquid IoT Apps with Wasm Binaries
+# Dynamic IoT Apps with Wasm Binaries
 
 ## Experimental environment
 
