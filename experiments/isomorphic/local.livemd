@@ -17,12 +17,12 @@ Mix.install([
 
 ```
 * Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
-remote: Enumerating objects: 1011, done.        
-remote: Counting objects: 100% (234/234), done.        
-remote: Compressing objects: 100% (139/139), done.        
-remote: Total 1011 (delta 103), reused 187 (delta 66), pack-reused 777        
+remote: Enumerating objects: 1020, done.        
+remote: Counting objects: 100% (243/243), done.        
+remote: Compressing objects: 100% (147/147), done.        
+remote: Total 1020 (delta 108), reused 193 (delta 67), pack-reused 777        
 Resolving Hex dependencies...
-Resolution completed in 0.502s
+Resolution completed in 0.361s
 New:
   benchee 1.1.0
   castore 0.1.22
@@ -69,9 +69,9 @@ New:
 * Getting table (Hex package)
 * Getting complex (Hex package)
 
-15:04:53.187 [info] Compiling file system watcher for Mac...
+19:11:51.744 [info] Compiling file system watcher for Mac...
 
-15:04:54.543 [info] Done.
+19:11:52.556 [info] Done.
 ==> file_system
 Compiling 7 files (.ex)
 Generated file_system app
@@ -127,7 +127,7 @@ Generated rustler_precompiled app
 ==> wasmex
 Compiling 14 files (.ex)
 
-15:05:10.955 [debug] Copying NIF from cache and extracting to /Users/antipop/Library/Caches/mix/installs/elixir-1.14.3-erts-13.1.4/910aa37ed68d5a17f1379f97c568e2b5/_build/rpi4_dev/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-aarch64-apple-darwin.so
+19:12:08.062 [debug] Copying NIF from cache and extracting to /Users/antipop/Library/Caches/mix/installs/elixir-1.14.3-erts-13.1.4/910aa37ed68d5a17f1379f97c568e2b5/_build/rpi4_dev/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-aarch64-apple-darwin.so
 Generated wasmex app
 ==> wasmtube
 Compiling 4 files (.ex)
@@ -262,10 +262,7 @@ label_data =
 
 ```elixir
 resnet50_wasm =
-  Wasmtube.from_file(
-    "/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm",
-    "resnet50"
-  )
+  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
 
 resnet50_result =
   resnet50_wasm
@@ -293,10 +290,7 @@ resnet50_result =
 
 ```elixir
 mobilenetv2_wasm =
-  Wasmtube.from_file(
-    "/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm",
-    "mobilenetv2"
-  )
+  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm")
 
 mobilenetv2_result =
   mobilenetv2_wasm
@@ -420,12 +414,12 @@ Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
 Name                         ips        average  deviation         median         99th %
-Wasm (MobileNetV2)         14.48       69.07 ms     ±1.05%       68.99 ms       74.21 ms
-Wasm (ResNet50)             2.82      354.10 ms     ±0.39%      354.25 ms      357.21 ms
+Wasm (MobileNetV2)         19.02       52.57 ms     ±2.18%       52.22 ms       58.17 ms
+Wasm (ResNet50)             3.71      269.88 ms     ±0.78%      269.12 ms      275.44 ms
 
 Comparison: 
-Wasm (MobileNetV2)         14.48
-Wasm (ResNet50)             2.82 - 5.13x slower +285.03 ms
+Wasm (MobileNetV2)         19.02
+Wasm (ResNet50)             3.71 - 5.13x slower +217.32 ms
 ```
 
 <!-- livebook:{"output":true} -->
@@ -477,25 +471,25 @@ Wasm (ResNet50)             2.82 - 5.13x slower +285.03 ms
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 69070250.38356164,
-          ips: 14.47801324661181,
-          std_dev: 722858.7466595283,
-          std_dev_ratio: 0.010465558509565863,
-          std_dev_ips: 0.15152049473468554,
-          median: 68992888.0,
-          percentiles: %{50 => 68992888.0, 99 => 74211845.0},
+          average: 52566798.302083336,
+          ips: 19.02341463243288,
+          std_dev: 1146471.3874636302,
+          std_dev_ratio: 0.021809800567941247,
+          std_dev_ips: 0.41489687925461644,
+          median: 52217530.0,
+          percentiles: %{50 => 52217530.0, 99 => 58174678.0},
           mode: nil,
-          minimum: 68353632,
-          maximum: 74211845,
+          minimum: 51513814,
+          maximum: 58174678,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 73
+          sample_size: 96
         },
-        samples: [68848469, 69338807, 69079346, 68538758, 69280681, 69049347, 68665468, 68643885,
-         69404682, 68837012, 69004554, 68845178, 68898720, 69085430, 69354640, 69561392, 69216639,
-         68984929, 69291098, 68465716, 69145764, 69102680, 69661185, 69006804, 69263306, 68676260,
-         69520392, 69420598, 68629717, 69121763, 69267265, 68836344, 69290472, ...]
+        samples: [51751192, 51891610, 51926111, 52367198, 52231405, 52166779, 51853776, 51852485,
+         51940902, 52242948, 52283655, 55557276, 54384929, 52473700, 53036998, 52641492, 52446200,
+         52567617, 52309865, 53475169, 52255572, 51944736, 52228739, 51929777, 53110789, 51924193,
+         51901736, 51752400, 52024945, 52121238, 52010029, 51740233, 51890026, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -549,23 +543,24 @@ Wasm (ResNet50)             2.82 - 5.13x slower +285.03 ms
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 354100473.6666667,
-          ips: 2.8240572220791558,
-          std_dev: 1383973.1366675885,
-          std_dev_ratio: 0.003908419331769646,
-          std_dev_ips: 0.011037599840797857,
-          median: 354254095.0,
-          percentiles: %{50 => 354254095.0, 99 => 357211743.0},
+          average: 269882358.94736844,
+          ips: 3.7053181389859446,
+          std_dev: 2112405.087449571,
+          std_dev_ratio: 0.007827132887413086,
+          std_dev_ips: 0.02900201746398514,
+          median: 269123115.0,
+          percentiles: %{50 => 269123115.0, 99 => 275436641.0},
           mode: nil,
-          minimum: 352203995,
-          maximum: 357211743,
-          relative_more: 5.126671348377517,
-          relative_less: 0.19505833942651285,
-          absolute_difference: 285030223.283105,
-          sample_size: 15
+          minimum: 267835808,
+          maximum: 275436641,
+          relative_more: 5.134084016234872,
+          relative_less: 0.19477671125712495,
+          absolute_difference: 217315560.6452851,
+          sample_size: 19
         },
-        samples: [355090559, 355747314, 354784807, 352316287, 353396837, 354254095, 352609665,
-         353754049, 353415505, 357211743, 352203995, 352722082, 354671013, 354629806, 354699348]
+        samples: [275436641, 271344471, 268434023, 268387647, 268928237, 268264563, 270032498,
+         269308241, 269123115, 269601827, 268804486, 270769131, 269821913, 275044179, 268851611,
+         268983321, 270688589, 267835808, 268104519]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
