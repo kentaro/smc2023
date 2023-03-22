@@ -17,30 +17,31 @@ Mix.install([
 
 ```
 * Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
-remote: Enumerating objects: 945, done.        
-remote: Counting objects: 100% (168/168), done.        
-remote: Compressing objects: 100% (99/99), done.        
-remote: Total 945 (delta 63), reused 134 (delta 41), pack-reused 777        
+remote: Enumerating objects: 1011, done.        
+remote: Counting objects: 100% (234/234), done.        
+remote: Compressing objects: 100% (139/139), done.        
+remote: Total 1011 (delta 103), reused 187 (delta 66), pack-reused 777        
 Resolving Hex dependencies...
-Resolution completed in 0.139s
+Resolution completed in 0.502s
 New:
   benchee 1.1.0
   castore 0.1.22
   complex 0.5.0
   deep_merge 1.0.0
   file_system 0.2.10
-  finch 0.14.0
+  finch 0.15.0
   hpax 0.1.2
   jason 1.4.0
   kino 0.8.1
   mime 2.0.3
-  mint 1.5.0
-  nimble_options 0.5.2
+  mint 1.5.1
+  nimble_options 1.0.1
   nimble_pool 0.2.6
-  nx 0.5.1
-  nx_image 0.1.0
-  req 0.3.5
+  nx 0.5.2
+  nx_image 0.1.1
+  req 0.3.6
   rustler_precompiled 0.5.5
+  sleeplocks 1.1.2
   statistex 1.0.0
   table 0.1.2
   telemetry 1.2.1
@@ -53,6 +54,7 @@ New:
 * Getting wasmex (Hex package)
 * Getting jason (Hex package)
 * Getting file_system (Hex package)
+* Getting sleeplocks (Hex package)
 * Getting rustler_precompiled (Hex package)
 * Getting castore (Hex package)
 * Getting deep_merge (Hex package)
@@ -67,9 +69,9 @@ New:
 * Getting table (Hex package)
 * Getting complex (Hex package)
 
-22:45:44.197 [info] Compiling file system watcher for Mac...
+15:04:53.187 [info] Compiling file system watcher for Mac...
 
-22:45:45.148 [info] Done.
+15:04:54.543 [info] Done.
 ==> file_system
 Compiling 7 files (.ex)
 Generated file_system app
@@ -96,6 +98,8 @@ Generated statistex app
 ==> hpax
 Compiling 4 files (.ex)
 Generated hpax app
+===> Analyzing applications...
+===> Compiling sleeplocks
 ==> complex
 Compiling 2 files (.ex)
 Generated complex app
@@ -104,16 +108,6 @@ Compiling 31 files (.ex)
 Generated nx app
 ==> nx_image
 Compiling 1 file (.ex)
-warning: Nx.Defn.Kernel.transform/2 is deprecated. Use deftransform/2 or deftransformp/2 from Nx.Defn instead
-Invalid call found at 7 locations:
-  lib/nx_image.ex:67: NxImage."__defn:center_crop_n__"/2
-  lib/nx_image.ex:163: NxImage."__defn:resize_n__"/2
-  lib/nx_image.ex:202: NxImage."__defn:spatial_axes__"/2
-  lib/nx_image.ex:232: NxImage."__defn:resize_nearest__"/3
-  lib/nx_image.ex:257: NxImage."__defn:resize_with_kernel__"/4
-  lib/nx_image.ex:307: NxImage."__defn:reorder_axis__"/3
-  lib/nx_image.ex:351: NxImage."__defn:resize_short_n__"/2
-
 Generated nx_image app
 ==> kino
 Compiling 37 files (.ex)
@@ -133,7 +127,7 @@ Generated rustler_precompiled app
 ==> wasmex
 Compiling 14 files (.ex)
 
-22:45:52.099 [debug] Copying NIF from cache and extracting to /Users/kentaro/Library/Caches/mix/installs/elixir-1.14.3-erts-13.1.5/910aa37ed68d5a17f1379f97c568e2b5/_build/rpi4_prod/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-aarch64-apple-darwin.so
+15:05:10.955 [debug] Copying NIF from cache and extracting to /Users/antipop/Library/Caches/mix/installs/elixir-1.14.3-erts-13.1.4/910aa37ed68d5a17f1379f97c568e2b5/_build/rpi4_dev/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-aarch64-apple-darwin.so
 Generated wasmex app
 ==> wasmtube
 Compiling 4 files (.ex)
@@ -268,7 +262,10 @@ label_data =
 
 ```elixir
 resnet50_wasm =
-  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
+  Wasmtube.from_file(
+    "/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/resnet50.wasm",
+    "resnet50"
+  )
 
 resnet50_result =
   resnet50_wasm
@@ -296,7 +293,10 @@ resnet50_result =
 
 ```elixir
 mobilenetv2_wasm =
-  Wasmtube.from_file("/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm")
+  Wasmtube.from_file(
+    "/Users/kentaro/src/github.com/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm",
+    "mobilenetv2"
+  )
 
 mobilenetv2_result =
   mobilenetv2_wasm
@@ -401,11 +401,11 @@ Benchee.run(%{
 
 ```
 Operating System: macOS
-CPU Information: Apple M1
-Number of Available Cores: 8
-Available memory: 16 GB
+CPU Information: Apple M1 Max
+Number of Available Cores: 10
+Available memory: 64 GB
 Elixir 1.14.3
-Erlang 25.2.3
+Erlang 25.2.1
 
 Benchmark suite executing with the following configuration:
 warmup: 2 s
@@ -420,12 +420,12 @@ Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
 Name                         ips        average  deviation         median         99th %
-Wasm (MobileNetV2)         18.28       54.72 ms    ±14.55%       53.66 ms      129.74 ms
-Wasm (ResNet50)             3.65      273.70 ms     ±0.30%      273.49 ms      276.61 ms
+Wasm (MobileNetV2)         14.48       69.07 ms     ±1.05%       68.99 ms       74.21 ms
+Wasm (ResNet50)             2.82      354.10 ms     ±0.39%      354.25 ms      357.21 ms
 
 Comparison: 
-Wasm (MobileNetV2)         18.28
-Wasm (ResNet50)             3.65 - 5.00x slower +218.99 ms
+Wasm (MobileNetV2)         14.48
+Wasm (ResNet50)             2.82 - 5.13x slower +285.03 ms
 ```
 
 <!-- livebook:{"output":true} -->
@@ -433,11 +433,11 @@ Wasm (ResNet50)             3.65 - 5.00x slower +218.99 ms
 ```
 %Benchee.Suite{
   system: %{
-    available_memory: "16 GB",
-    cpu_speed: "Apple M1",
+    available_memory: "64 GB",
+    cpu_speed: "Apple M1 Max",
     elixir: "1.14.3",
-    erlang: "25.2.3",
-    num_cores: 8,
+    erlang: "25.2.1",
+    num_cores: 10,
     os: :macOS
   },
   configuration: %Benchee.Configuration{
@@ -477,25 +477,25 @@ Wasm (ResNet50)             3.65 - 5.00x slower +218.99 ms
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 54715182.89130435,
-          ips: 18.276462713952213,
-          std_dev: 7958787.760178912,
-          std_dev_ratio: 0.14545848774716913,
-          std_dev_ips: 2.6584666277390117,
-          median: 53657074.0,
-          percentiles: %{50 => 53657074.0, 99 => 129743879.0},
+          average: 69070250.38356164,
+          ips: 14.47801324661181,
+          std_dev: 722858.7466595283,
+          std_dev_ratio: 0.010465558509565863,
+          std_dev_ips: 0.15152049473468554,
+          median: 68992888.0,
+          percentiles: %{50 => 68992888.0, 99 => 74211845.0},
           mode: nil,
-          minimum: 52925837,
-          maximum: 129743879,
+          minimum: 68353632,
+          maximum: 74211845,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 92
+          sample_size: 73
         },
-        samples: [53380592, 53181090, 53329967, 53507343, 53419676, 53706344, 53346925, 54119058,
-         54243642, 54168433, 54191600, 53475634, 53755178, 53496510, 53701886, 53444884, 53318508,
-         54996108, 53890056, 53237756, 52925837, 53485051, 53254424, 53283424, 53598635, 53295216,
-         53098756, 54000181, 53787887, 53313007, 53702596, 53300174, 53454676, ...]
+        samples: [68848469, 69338807, 69079346, 68538758, 69280681, 69049347, 68665468, 68643885,
+         69404682, 68837012, 69004554, 68845178, 68898720, 69085430, 69354640, 69561392, 69216639,
+         68984929, 69291098, 68465716, 69145764, 69102680, 69661185, 69006804, 69263306, 68676260,
+         69520392, 69420598, 68629717, 69121763, 69267265, 68836344, 69290472, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -549,24 +549,23 @@ Wasm (ResNet50)             3.65 - 5.00x slower +218.99 ms
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 273701960.84210527,
-          ips: 3.6536091919958356,
-          std_dev: 809440.1379696726,
-          std_dev_ratio: 0.0029573779284563727,
-          std_dev_ips: 0.010805103183613806,
-          median: 273485401.0,
-          percentiles: %{50 => 273485401.0, 99 => 276605600.0},
+          average: 354100473.6666667,
+          ips: 2.8240572220791558,
+          std_dev: 1383973.1366675885,
+          std_dev_ratio: 0.003908419331769646,
+          std_dev_ips: 0.011037599840797857,
+          median: 354254095.0,
+          percentiles: %{50 => 354254095.0, 99 => 357211743.0},
           mode: nil,
-          minimum: 272939396,
-          maximum: 276605600,
-          relative_more: 5.002303682066345,
-          relative_less: 0.19990789515340285,
-          absolute_difference: 218986777.95080093,
-          sample_size: 19
+          minimum: 352203995,
+          maximum: 357211743,
+          relative_more: 5.126671348377517,
+          relative_less: 0.19505833942651285,
+          absolute_difference: 285030223.283105,
+          sample_size: 15
         },
-        samples: [272939396, 273331525, 273863197, 273466818, 273605444, 273534403, 273720112,
-         274381452, 273330567, 273387275, 273394609, 276605600, 274227201, 274163783, 273142899,
-         273669403, 273134149, 273485401, 272954022]
+        samples: [355090559, 355747314, 354784807, 352316287, 353396837, 354254095, 352609665,
+         353754049, 353415505, 357211743, 352203995, 352722082, 354671013, 354629806, 354699348]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
