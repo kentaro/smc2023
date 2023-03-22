@@ -17,30 +17,31 @@ Mix.install([
 
 ```
 * Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
-remote: Enumerating objects: 945, done.        
-remote: Counting objects: 100% (168/168), done.        
-remote: Compressing objects: 100% (99/99), done.        
-remote: Total 945 (delta 63), reused 134 (delta 41), pack-reused 777        
+remote: Enumerating objects: 1011, done.        
+remote: Counting objects: 100% (234/234), done.        
+remote: Compressing objects: 100% (139/139), done.        
+remote: Total 1011 (delta 103), reused 187 (delta 66), pack-reused 777        
 Resolving Hex dependencies...
-Resolution completed in 0.119s
+Resolution completed in 0.108s
 New:
   benchee 1.1.0
   castore 0.1.22
   complex 0.5.0
   deep_merge 1.0.0
   file_system 0.2.10
-  finch 0.14.0
+  finch 0.15.0
   hpax 0.1.2
   jason 1.4.0
   kino 0.8.1
   mime 2.0.3
-  mint 1.5.0
-  nimble_options 0.5.2
+  mint 1.5.1
+  nimble_options 1.0.1
   nimble_pool 0.2.6
-  nx 0.5.1
-  nx_image 0.1.0
-  req 0.3.5
+  nx 0.5.2
+  nx_image 0.1.1
+  req 0.3.6
   rustler_precompiled 0.5.5
+  sleeplocks 1.1.2
   statistex 1.0.0
   table 0.1.2
   telemetry 1.2.1
@@ -53,6 +54,7 @@ New:
 * Getting wasmex (Hex package)
 * Getting jason (Hex package)
 * Getting file_system (Hex package)
+* Getting sleeplocks (Hex package)
 * Getting rustler_precompiled (Hex package)
 * Getting castore (Hex package)
 * Getting deep_merge (Hex package)
@@ -92,6 +94,8 @@ Generated statistex app
 ==> hpax
 Compiling 4 files (.ex)
 Generated hpax app
+===> Analyzing applications...
+===> Compiling sleeplocks
 ==> complex
 Compiling 2 files (.ex)
 Generated complex app
@@ -100,16 +104,6 @@ Compiling 31 files (.ex)
 Generated nx app
 ==> nx_image
 Compiling 1 file (.ex)
-warning: Nx.Defn.Kernel.transform/2 is deprecated. Use deftransform/2 or deftransformp/2 from Nx.Defn instead
-Invalid call found at 7 locations:
-  lib/nx_image.ex:67: NxImage."__defn:center_crop_n__"/2
-  lib/nx_image.ex:163: NxImage."__defn:resize_n__"/2
-  lib/nx_image.ex:202: NxImage."__defn:spatial_axes__"/2
-  lib/nx_image.ex:232: NxImage."__defn:resize_nearest__"/3
-  lib/nx_image.ex:257: NxImage."__defn:resize_with_kernel__"/4
-  lib/nx_image.ex:307: NxImage."__defn:reorder_axis__"/3
-  lib/nx_image.ex:351: NxImage."__defn:resize_short_n__"/2
-
 Generated nx_image app
 ==> kino
 Compiling 37 files (.ex)
@@ -129,9 +123,7 @@ Generated rustler_precompiled app
 ==> wasmex
 Compiling 14 files (.ex)
 
-14:28:43.788 [debug] Downloading NIF from https://github.com/tessi/wasmex/releases/download/v0.8.2/libwasmex-v0.8.2-nif-2.16-x86_64-unknown-linux-gnu.so.tar.gz
-
-14:28:45.674 [debug] NIF cached at /home/kentaro/.cache/rustler_precompiled/precompiled_nifs/libwasmex-v0.8.2-nif-2.16-x86_64-unknown-linux-gnu.so.tar.gz and extracted to /home/kentaro/.cache/mix/installs/elixir-1.14.3-erts-13.1.5/910aa37ed68d5a17f1379f97c568e2b5/_build/prod/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-x86_64-unknown-linux-gnu.so
+06:50:23.363 [debug] Copying NIF from cache and extracting to /home/antipop/.cache/mix/installs/elixir-1.14.3-erts-13.1.5/910aa37ed68d5a17f1379f97c568e2b5/_build/dev/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-x86_64-unknown-linux-gnu.so
 Generated wasmex app
 ==> wasmtube
 Compiling 4 files (.ex)
@@ -269,7 +261,7 @@ label_data =
 ## Prediction with Wasm binary (ResNet50)
 
 ```elixir
-resnet50_wasm = Wasmtube.from_file("/home/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
+resnet50_wasm = Wasmtube.from_file("/home/kentaro/elixir-ml-wasm/wasm/resnet50.wasm", "resnet50")
 
 resnet50_result =
   resnet50_wasm
@@ -296,7 +288,8 @@ resnet50_result =
 ## Prediction with Wasm binary (MobileNet2)
 
 ```elixir
-mobilenetv2_wasm = Wasmtube.from_file("/home/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm")
+mobilenetv2_wasm =
+  Wasmtube.from_file("/home/kentaro/elixir-ml-wasm/wasm/mobilenetv2.wasm", "mobilenetv2")
 
 mobilenetv2_result =
   mobilenetv2_wasm
@@ -420,12 +413,12 @@ Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
 Name                         ips        average  deviation         median         99th %
-Wasm (MobileNetV2)          5.64        0.177 s     ±0.75%        0.177 s        0.180 s
-Wasm (ResNet50)             0.95         1.05 s     ±0.45%         1.05 s         1.06 s
+Wasm (MobileNetV2)          5.86        0.171 s     ±0.55%        0.171 s        0.173 s
+Wasm (ResNet50)             0.94         1.07 s     ±1.79%         1.06 s         1.10 s
 
 Comparison: 
-Wasm (MobileNetV2)          5.64
-Wasm (ResNet50)             0.95 - 5.95x slower +0.88 s
+Wasm (MobileNetV2)          5.86
+Wasm (ResNet50)             0.94 - 6.26x slower +0.90 s
 ```
 
 <!-- livebook:{"output":true} -->
@@ -477,25 +470,25 @@ Wasm (ResNet50)             0.95 - 5.95x slower +0.88 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 177317660.79310346,
-          ips: 5.639596166152975,
-          std_dev: 1322350.396141263,
-          std_dev_ratio: 0.007457522224389135,
-          std_dev_ips: 0.04205741374566557,
-          median: 177339205.0,
-          percentiles: %{50 => 177339205.0, 99 => 179581726.0},
+          average: 170724508.8,
+          ips: 5.857389820763683,
+          std_dev: 933753.7404623377,
+          std_dev_ratio: 0.005469359654484112,
+          std_dev_ips: 0.03203617156627081,
+          median: 170721325.0,
+          percentiles: %{50 => 170721325.0, 99 => 172564510.0},
           mode: nil,
-          minimum: 174946183,
-          maximum: 179581726,
+          minimum: 169073534,
+          maximum: 172564510,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 29
+          sample_size: 30
         },
-        samples: [175221495, 174946183, 176046499, 178742113, 175956973, 178906840, 176746108,
-         176653026, 176407712, 177569215, 179199965, 178493560, 179581726, 178200889, 176023918,
-         178152614, 175617784, 177831142, 178715847, 176882860, 177601678, 179468637, 178430566,
-         176751378, 175901981, 175812918, 177225141, 177784190, 177339205]
+        samples: [171237713, 169073534, 171358919, 170566696, 170931428, 169524605, 171640364,
+         170525848, 170062227, 172357335, 170031246, 170726092, 170344838, 169151724, 169703344,
+         169213804, 171342172, 170889091, 170532732, 172536057, 170988410, 169923121, 172564510,
+         171579501, 170077936, 171402225, 171023512, 170394896, 171314826, 170716558]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -549,22 +542,22 @@ Wasm (ResNet50)             0.95 - 5.95x slower +0.88 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 1054499920.6,
-          ips: 0.9483168091952154,
-          std_dev: 4762782.552056917,
-          std_dev_ratio: 0.0045166267526572604,
-          std_dev_ips: 0.004283193070405681,
-          median: 1054037070.0,
-          percentiles: %{50 => 1054037070.0, 99 => 1061743612.0},
+          average: 1069508198.8,
+          ips: 0.9350091949944948,
+          std_dev: 19117728.398114163,
+          std_dev_ratio: 0.017875251839644116,
+          std_dev_ips: 0.016713524832909506,
+          median: 1060997972.0,
+          percentiles: %{50 => 1060997972.0, 99 => 1102203889.0},
           mode: nil,
-          minimum: 1048427928,
-          maximum: 1061743612,
-          relative_more: 5.946953709424377,
-          relative_less: 0.16815331829727542,
-          absolute_difference: 877182259.8068966,
+          minimum: 1054407370,
+          maximum: 1102203889,
+          relative_more: 6.264526436874422,
+          relative_less: 0.15962898553891855,
+          absolute_difference: 898783690.0,
           sample_size: 5
         },
-        samples: [1054037070, 1053463306, 1061743612, 1054827687, 1048427928]
+        samples: [1054407370, 1070026401, 1102203889, 1060997972, 1059905362]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
