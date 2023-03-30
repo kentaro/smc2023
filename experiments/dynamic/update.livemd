@@ -100,16 +100,16 @@ sequenceDiagram
     participant Wasm Sandbox
   end
 
-  OS ->> App: (1) starts the app
+  OS ->> Elixir App: (1) starts the app
 
-  App ->> Wasmtube: (2) starts Wasmtube <br> worker
+  Elixir App ->> Wasmtube: (2) starts Wasmtube <br> worker
   Wasmtube ->> OS: (3) reads the Wasm file
   Wasmtube ->> Wasm Sandbox: (4) instantiates a Wasm sandbox <br> with the Wasm file
   Wasm Sandbox ->> Linear Memory: (5) creates a new <br> linear memory
   Wasm Sandbox ->> Wasmtube: (6) finish initialization process
 
   par functions calls
-    App ->> Wasmtube: (7) calls a function
+    Elixir App ->> Wasmtube: (7) calls a function
     Wasmtube ->> Linear Memory: (8) writes argument <br> data to the <br> function
     Wasmtube ->> Wasm Sandbox: (9) delegates the function
     Wasm Sandbox ->> Linear Memory: (10) reads the data
@@ -117,7 +117,7 @@ sequenceDiagram
     Wasm Sandbox ->> Linear Memory: (12) writes result data
     Wasm Sandbox ->> Wasmtube: (13) responds to the call
     Wasmtube ->> Linear Memory: (14) reads the result
-    Wasmtube ->> App: (15) delegates <br> the response
+    Wasmtube ->> Elixir App: (15) delegates <br> the response
   end
 ```
 
