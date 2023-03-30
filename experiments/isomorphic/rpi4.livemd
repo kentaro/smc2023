@@ -110,7 +110,7 @@ label_data =
 }
 ```
 
-## Prediction with Wasm binary (ResNet50)
+## Prediction with Wasm binary (ResNet-50)
 
 ```elixir
 resnet50_wasm = Wasmtube.from_file("/data/wasm/resnet50.wasm")
@@ -235,10 +235,14 @@ mobilenetv2_wasm_func = fn ->
   |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 end
 
-Benchee.run(%{
-  "Wasm (ResNet50)" => resnet50_wasm_func,
-  "Wasm (MobileNetV2)" => mobilenetv2_wasm_func
-})
+Benchee.run(
+  %{
+    "Wasm (ResNet50)" => resnet50_wasm_func,
+    "Wasm (MobileNetV2)" => mobilenetv2_wasm_func
+  },
+  time: 60,
+  unit_scaling: :smallest
+)
 ```
 
 <!-- livebook:{"output":true} -->
@@ -254,23 +258,23 @@ Erlang ok
 
 Benchmark suite executing with the following configuration:
 warmup: 2 s
-time: 5 s
+time: 1 min
 memory time: 0 ns
 reduction time: 0 ns
 parallel: 1
 inputs: none specified
-Estimated total run time: 14 s
+Estimated total run time: 2.07 min
 
 Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
 Name                         ips        average  deviation         median         99th %
-Wasm (MobileNetV2)          1.70         0.59 s     ±0.15%         0.59 s         0.59 s
-Wasm (ResNet50)             0.30         3.30 s     ±0.04%         3.30 s         3.30 s
+Wasm (MobileNetV2)          1.70      588.69 ms     ±0.22%      588.92 ms      590.93 ms
+Wasm (ResNet50)             0.30     3304.31 ms     ±0.14%     3303.16 ms     3319.68 ms
 
 Comparison: 
 Wasm (MobileNetV2)          1.70
-Wasm (ResNet50)             0.30 - 5.61x slower +2.72 s
+Wasm (ResNet50)             0.30 - 5.61x slower +2715.62 ms
 ```
 
 <!-- livebook:{"output":true} -->
@@ -287,7 +291,7 @@ Wasm (ResNet50)             0.30 - 5.61x slower +2.72 s
   },
   configuration: %Benchee.Configuration{
     parallel: 1,
-    time: 5000000000.0,
+    time: 60000000000.0,
     warmup: 2000000000.0,
     memory_time: 0.0,
     reduction_time: 0.0,
@@ -298,7 +302,7 @@ Wasm (ResNet50)             0.30 - 5.61x slower +2.72 s
     inputs: nil,
     save: false,
     load: false,
-    unit_scaling: :best,
+    unit_scaling: :smallest,
     assigns: %{},
     before_each: nil,
     after_each: nil,
@@ -322,23 +326,26 @@ Wasm (ResNet50)             0.30 - 5.61x slower +2.72 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 588462806.1111112,
-          ips: 1.6993427445458364,
-          std_dev: 873275.2959637706,
-          std_dev_ratio: 0.0014839940381871513,
-          std_dev_ips: 0.0025218145017426126,
-          median: 588778565.0,
-          percentiles: %{50 => 588778565.0, 99 => 589153635.0},
+          average: 588687034.5980393,
+          ips: 1.698695471835572,
+          std_dev: 1312282.7836997774,
+          std_dev_ratio: 0.0022291688224385913,
+          std_dev_ips: 0.0037866789846334693,
+          median: 588922824.0,
+          percentiles: %{50 => 588922824.0, 99 => 590934479.53},
           mode: nil,
-          minimum: 586504774,
-          maximum: 589153635,
+          minimum: 582478219,
+          maximum: 590943811,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 9
+          sample_size: 102
         },
-        samples: [589153635, 588673316, 588856260, 588778565, 588576387, 586504774, 588974827,
-         589090941, 587556550]
+        samples: [588382411, 587640178, 587271015, 588574708, 589547644, 589418683, 587348387,
+         589963530, 589079113, 589425796, 590429510, 587827275, 586778284, 589443354, 589832295,
+         590418568, 588683510, 588931989, 588975582, 589134692, 589311062, 588804215, 587859613,
+         586448756, 586455274, 588183575, 585962799, 589472342, 582478219, 590943811, 590015339,
+         590172949, 588743592, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -392,22 +399,24 @@ Wasm (ResNet50)             0.30 - 5.61x slower +2.72 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 3303843442.0,
-          ips: 0.30267778045640215,
-          std_dev: 1362942.6638828209,
-          std_dev_ratio: 4.1253246039338836e-4,
-          std_dev_ips: 1.248644094780894e-4,
-          median: 3303843442.0,
-          percentiles: %{50 => 3303843442.0, 99 => 3304807188.0},
+          average: 3304311065.368421,
+          ips: 0.30263494574730754,
+          std_dev: 4620125.728009108,
+          std_dev_ratio: 0.0013982114990417761,
+          std_dev_ips: 4.231476611557695e-4,
+          median: 3303162058.0,
+          percentiles: %{50 => 3303162058.0, 99 => 3319675750.0},
           mode: nil,
-          minimum: 3302879696,
-          maximum: 3304807188,
-          relative_more: 5.614362382278043,
-          relative_less: 0.17811461603485726,
-          absolute_difference: 2715380635.888889,
-          sample_size: 2
+          minimum: 3298517658,
+          maximum: 3319675750,
+          relative_more: 5.613018244277511,
+          relative_less: 0.17815726877772095,
+          absolute_difference: 2715624030.770382,
+          sample_size: 19
         },
-        samples: [3304807188, 3302879696]
+        samples: [3300864493, 3307812115, 3319675750, 3303162058, 3309673388, 3300872073,
+         3307227405, 3302461962, 3301438784, 3298517658, 3301588648, 3304546971, 3301779215,
+         3302084969, 3305242975, 3303963521, 3304349996, 3305140634, 3301507627]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{

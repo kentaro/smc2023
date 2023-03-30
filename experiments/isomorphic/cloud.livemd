@@ -16,133 +16,6 @@ Mix.install([
 <!-- livebook:{"output":true} -->
 
 ```
-* Getting wasmtube (https://github.com/kentaro/wasmtube.git - origin/main)
-remote: Enumerating objects: 1020, done.        
-remote: Counting objects: 100% (243/243), done.        
-remote: Compressing objects: 100% (147/147), done.        
-remote: Total 1020 (delta 108), reused 193 (delta 67), pack-reused 777        
-Resolving Hex dependencies...
-Resolution completed in 0.115s
-New:
-  benchee 1.1.0
-  castore 0.1.22
-  complex 0.5.0
-  deep_merge 1.0.0
-  file_system 0.2.10
-  finch 0.15.0
-  hpax 0.1.2
-  jason 1.4.0
-  kino 0.8.1
-  mime 2.0.3
-  mint 1.5.1
-  nimble_options 1.0.1
-  nimble_pool 0.2.6
-  nx 0.5.2
-  nx_image 0.1.1
-  req 0.3.6
-  rustler_precompiled 0.5.5
-  sleeplocks 1.1.2
-  statistex 1.0.0
-  table 0.1.2
-  telemetry 1.2.1
-  wasmex 0.8.2
-* Getting nx (Hex package)
-* Getting nx_image (Hex package)
-* Getting kino (Hex package)
-* Getting req (Hex package)
-* Getting benchee (Hex package)
-* Getting wasmex (Hex package)
-* Getting jason (Hex package)
-* Getting file_system (Hex package)
-* Getting sleeplocks (Hex package)
-* Getting rustler_precompiled (Hex package)
-* Getting castore (Hex package)
-* Getting deep_merge (Hex package)
-* Getting statistex (Hex package)
-* Getting finch (Hex package)
-* Getting mime (Hex package)
-* Getting mint (Hex package)
-* Getting nimble_options (Hex package)
-* Getting nimble_pool (Hex package)
-* Getting telemetry (Hex package)
-* Getting hpax (Hex package)
-* Getting table (Hex package)
-* Getting complex (Hex package)
-==> file_system
-Compiling 7 files (.ex)
-Generated file_system app
-==> deep_merge
-Compiling 2 files (.ex)
-Generated deep_merge app
-==> table
-Compiling 5 files (.ex)
-Generated table app
-==> mime
-Compiling 1 file (.ex)
-Generated mime app
-==> nimble_options
-Compiling 3 files (.ex)
-Generated nimble_options app
-===> Analyzing applications...
-===> Compiling telemetry
-==> jason
-Compiling 10 files (.ex)
-Generated jason app
-==> statistex
-Compiling 3 files (.ex)
-Generated statistex app
-==> hpax
-Compiling 4 files (.ex)
-Generated hpax app
-===> Analyzing applications...
-===> Compiling sleeplocks
-==> complex
-Compiling 2 files (.ex)
-Generated complex app
-==> nx
-Compiling 31 files (.ex)
-Generated nx app
-==> nx_image
-Compiling 1 file (.ex)
-Generated nx_image app
-==> kino
-Compiling 37 files (.ex)
-Generated kino app
-==> nimble_pool
-Compiling 2 files (.ex)
-Generated nimble_pool app
-==> benchee
-Compiling 44 files (.ex)
-Generated benchee app
-==> castore
-Compiling 1 file (.ex)
-Generated castore app
-==> rustler_precompiled
-Compiling 4 files (.ex)
-Generated rustler_precompiled app
-==> wasmex
-Compiling 14 files (.ex)
-
-10:13:36.080 [debug] Copying NIF from cache and extracting to /home/antipop/.cache/mix/installs/elixir-1.14.3-erts-13.1.5/910aa37ed68d5a17f1379f97c568e2b5/_build/dev/lib/wasmex/priv/native/libwasmex-v0.8.2-nif-2.16-x86_64-unknown-linux-gnu.so
-Generated wasmex app
-==> wasmtube
-Compiling 4 files (.ex)
-Generated wasmtube app
-==> mint
-Compiling 1 file (.erl)
-Compiling 19 files (.ex)
-Generated mint app
-==> finch
-Compiling 13 files (.ex)
-Generated finch app
-==> req
-Compiling 5 files (.ex)
-Generated req app
-```
-
-<!-- livebook:{"output":true} -->
-
-```
 :ok
 ```
 
@@ -258,7 +131,7 @@ label_data =
 }
 ```
 
-## Prediction with Wasm binary (ResNet50)
+## Prediction with Wasm binary (ResNet-50)
 
 ```elixir
 resnet50_wasm = Wasmtube.from_file("/home/kentaro/elixir-ml-wasm/wasm/resnet50.wasm")
@@ -383,10 +256,14 @@ mobilenetv2_wasm_func = fn ->
   |> Wasmtube.call_function("predict", image: kino_image.content, width: 224, height: 224)
 end
 
-Benchee.run(%{
-  "Wasm (ResNet50)" => resnet50_wasm_func,
-  "Wasm (MobileNetV2)" => mobilenetv2_wasm_func
-})
+Benchee.run(
+  %{
+    "Wasm (ResNet50)" => resnet50_wasm_func,
+    "Wasm (MobileNetV2)" => mobilenetv2_wasm_func
+  },
+  time: 60,
+  unit_scaling: :smallest
+)
 ```
 
 <!-- livebook:{"output":true} -->
@@ -401,23 +278,23 @@ Erlang 25.2.3
 
 Benchmark suite executing with the following configuration:
 warmup: 2 s
-time: 5 s
+time: 1 min
 memory time: 0 ns
 reduction time: 0 ns
 parallel: 1
 inputs: none specified
-Estimated total run time: 14 s
+Estimated total run time: 2.07 min
 
 Benchmarking Wasm (MobileNetV2) ...
 Benchmarking Wasm (ResNet50) ...
 
 Name                         ips        average  deviation         median         99th %
-Wasm (MobileNetV2)          5.95        0.168 s     ±1.32%        0.167 s        0.176 s
-Wasm (ResNet50)             0.93         1.07 s     ±0.94%         1.07 s         1.09 s
+Wasm (MobileNetV2)          5.93      168.55 ms     ±1.31%      168.19 ms      178.07 ms
+Wasm (ResNet50)             0.89     1120.75 ms    ±20.77%     1065.05 ms     2224.26 ms
 
 Comparison: 
-Wasm (MobileNetV2)          5.95
-Wasm (ResNet50)             0.93 - 6.38x slower +0.90 s
+Wasm (MobileNetV2)          5.93
+Wasm (ResNet50)             0.89 - 6.65x slower +952.19 ms
 ```
 
 <!-- livebook:{"output":true} -->
@@ -434,7 +311,7 @@ Wasm (ResNet50)             0.93 - 6.38x slower +0.90 s
   },
   configuration: %Benchee.Configuration{
     parallel: 1,
-    time: 5000000000.0,
+    time: 60000000000.0,
     warmup: 2000000000.0,
     memory_time: 0.0,
     reduction_time: 0.0,
@@ -445,7 +322,7 @@ Wasm (ResNet50)             0.93 - 6.38x slower +0.90 s
     inputs: nil,
     save: false,
     load: false,
-    unit_scaling: :best,
+    unit_scaling: :smallest,
     assigns: %{},
     before_each: nil,
     after_each: nil,
@@ -469,25 +346,26 @@ Wasm (ResNet50)             0.93 - 6.38x slower +0.90 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 167928704.76666668,
-          ips: 5.9549080747658865,
-          std_dev: 2213681.8786813174,
-          std_dev_ratio: 0.013182272094322295,
-          std_dev_ips: 0.07849921853824085,
-          median: 167494296.0,
-          percentiles: %{50 => 167494296.0, 99 => 175726844.0},
+          average: 168554956.23595506,
+          ips: 5.932783125048722,
+          std_dev: 2214664.8983327947,
+          std_dev_ratio: 0.013139126536466548,
+          std_dev_ips: 0.0779515881934286,
+          median: 168194034.0,
+          percentiles: %{50 => 168194034.0, 99 => 178074331.0},
           mode: nil,
-          minimum: 165275435,
-          maximum: 175726844,
+          minimum: 165405055,
+          maximum: 184328703,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 30
+          sample_size: 356
         },
-        samples: [165907636, 165275435, 165359048, 167600799, 167975032, 168143799, 166427630,
-         166335515, 168097618, 167325046, 168299617, 167387793, 165653787, 175726844, 172545403,
-         168688985, 170131705, 171056294, 166929993, 167071813, 168797087, 168712343, 165836311,
-         168473860, 166049900, 167122698, 167169230, 167936374, 166576167, 169247381]
+        samples: [174792834, 167751256, 168187825, 170012134, 169282391, 168031363, 169661659,
+         168533957, 168365997, 168373558, 166576472, 167704868, 167204734, 168762574, 168646525,
+         166129219, 167010364, 168542927, 168749542, 168200243, 168827451, 167906077, 168889293,
+         167926250, 169622487, 168822990, 168278122, 168404142, 168570673, 168652865, 168979030,
+         166825163, 168384337, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -541,22 +419,26 @@ Wasm (ResNet50)             0.93 - 6.38x slower +0.90 s
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 1070585800.6,
-          ips: 0.9340680582906659,
-          std_dev: 10071525.962998075,
-          std_dev_ratio: 0.009407490700281641,
-          std_dev_ips: 0.008787236571799568,
-          median: 1068266362.0,
-          percentiles: %{50 => 1068266362.0, 99 => 1085719823.0},
+          average: 1120746973.9454546,
+          ips: 0.8922620566885142,
+          std_dev: 232801264.47735855,
+          std_dev_ratio: 0.2077197350422547,
+          std_dev_ips: 0.1853404380035954,
+          median: 1065050623.0,
+          percentiles: %{50 => 1065050623.0, 99 => 2224264505.0},
           mode: nil,
-          minimum: 1058860013,
-          maximum: 1085719823,
-          relative_more: 6.375240028722641,
-          relative_less: 0.15685683919266682,
-          absolute_difference: 902657095.8333334,
-          sample_size: 5
+          minimum: 1055039026,
+          maximum: 2224264505,
+          relative_more: 6.6491487344730125,
+          relative_less: 0.15039519191613576,
+          absolute_difference: 952192017.7094996,
+          sample_size: 55
         },
-        samples: [1058860013, 1074117999, 1085719823, 1065964806, 1068266362]
+        samples: [1062448014, 1071415156, 1069587062, 1062866467, 1091242988, 1069470099,
+         1065098963, 1070768765, 1068514516, 1071111603, 1065050623, 1065499962, 1065828421,
+         1060863935, 1076847445, 1077770224, 1062189784, 1060623223, 1061288569, 1062622808,
+         1059861320, 1064030848, 1064693392, 1068029787, 1060965682, 1064069237, 1081507221,
+         1055039026, 1057887300, 1062032307, 1059144247, 1063380083, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{

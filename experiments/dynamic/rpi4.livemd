@@ -116,12 +116,18 @@ wasm_func = fn ->
   wasm |> Wasmtube.call_function("calc_stats", data: %{values: values})
 end
 
+wasm_noop_func = fn ->
+  wasm
+  |> Wasmtube.call_function("noop", data: %{values: values})
+end
+
 elixir_func = fn ->
   pid |> Processor.calc_stats(values)
 end
 
 Benchee.run(%{
   "Wasm" => wasm_func,
+  "Wasm (Noop)" => wasm_noop_func,
   "Elixir" => elixir_func
 })
 ```
@@ -144,18 +150,21 @@ memory time: 0 ns
 reduction time: 0 ns
 parallel: 1
 inputs: none specified
-Estimated total run time: 14 s
+Estimated total run time: 21 s
 
 Benchmarking Elixir ...
 Benchmarking Wasm ...
+Benchmarking Wasm (Noop) ...
 
-Name             ips        average  deviation         median         99th %
-Elixir       32.61 K       30.67 μs    ±68.32%       30.85 μs       43.19 μs
-Wasm          4.02 K      248.99 μs    ±17.01%      235.59 μs      418.97 μs
+Name                  ips        average  deviation         median         99th %
+Elixir            32.24 K       31.01 μs    ±65.48%       31.17 μs       43.26 μs
+Wasm (Noop)        4.05 K      246.67 μs    ±15.16%      233.78 μs      392.25 μs
+Wasm               3.96 K      252.48 μs    ±22.50%      240.26 μs      399.59 μs
 
 Comparison: 
-Elixir       32.61 K
-Wasm          4.02 K - 8.12x slower +218.32 μs
+Elixir            32.24 K
+Wasm (Noop)        4.05 K - 7.95x slower +215.66 μs
+Wasm               3.96 K - 8.14x slower +221.46 μs
 ```
 
 <!-- livebook:{"output":true} -->
@@ -207,24 +216,96 @@ Wasm          4.02 K - 8.12x slower +218.32 μs
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 30669.208405540106,
-          ips: 32605.993176509874,
-          std_dev: 20954.131188626,
-          std_dev_ratio: 0.6832302585560321,
-          std_dev_ips: 22277.40114846306,
-          median: 30851.0,
-          percentiles: %{50 => 30851.0, 99 => 43185.0},
-          mode: 30907,
-          minimum: 25481,
-          maximum: 4827839,
+          average: 31013.404823649696,
+          ips: 32244.121717246482,
+          std_dev: 20308.918238161674,
+          std_dev_ratio: 0.654843231616892,
+          std_dev_ips: 21114.844865970095,
+          median: 31166.0,
+          percentiles: %{50 => 31166.0, 99 => 43260.800000000105},
+          mode: 31370,
+          minimum: 25407,
+          maximum: 4830857,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 148878
+          sample_size: 147689
         },
-        samples: [123535, 34611, 51555, 31518, 56277, 37907, 31981, 43462, 36610, 32129, 37314,
-         31370, 36573, 30703, 30704, 30666, 30573, 36129, 30963, 30832, 30796, 30684, 36037, 30611,
-         30758, 30518, 30851, 35870, 30722, 30407, 30814, 30500, 35944, ...]
+        samples: [141295, 29944, 48999, 42814, 55296, 28111, 38648, 39352, 27370, 37944, 33000,
+         27147, 37426, 26388, 26036, 31166, 26222, 32185, 31184, 26204, 25741, 30944, 31907, 25870,
+         31018, 26148, 25777, 36592, 26333, 25925, 30907, 26129, 32166, ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    },
+    %Benchee.Scenario{
+      name: "Wasm (Noop)",
+      job_name: "Wasm (Noop)",
+      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 246671.8694320293,
+          ips: 4053.9685465656676,
+          std_dev: 37395.29376950125,
+          std_dev_ratio: 0.15159934473114114,
+          std_dev_ips: 614.5789752200119,
+          median: 233775.0,
+          percentiles: %{50 => 233775.0, 99 => 392247.16000000003},
+          mode: 226405,
+          minimum: 207146,
+          maximum: 851639,
+          relative_more: 7.953717782187085,
+          relative_less: 0.12572736767698384,
+          absolute_difference: 215658.4646083796,
+          sample_size: 19913
+        },
+        samples: [490624, 433237, 260942, 241867, 244368, 266571, 255701, 247368, 258589, 250961,
+         242553, 245405, 251627, 250849, 237812, 232553, 228238, 227331, 243201, 246350, 242350,
+         239071, 234479, 238350, 261386, 333960, 277553, 258275, 236312, 238572, 232849, 218720,
+         ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -278,25 +359,24 @@ Wasm          4.02 K - 8.12x slower +218.32 μs
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 248985.3907153729,
-          ips: 4016.2999006762925,
-          std_dev: 42356.201839268244,
-          std_dev_ratio: 0.17011520924007803,
-          std_dev_ips: 683.2336979744521,
-          median: 235589.0,
-          percentiles: %{50 => 235589.0, 99 => 418974.5399999999},
-          mode: 223034,
-          minimum: 209775,
-          maximum: 1163095,
-          relative_more: 8.118415950716093,
-          relative_less: 0.12317673867299124,
-          absolute_difference: 218316.18230983277,
-          sample_size: 19710
+          average: 252478.14837283432,
+          ips: 3960.7388062879036,
+          std_dev: 56797.44747381406,
+          std_dev_ratio: 0.2249598543076342,
+          std_dev_ips: 891.0072248131198,
+          median: 240257.0,
+          percentiles: %{50 => 240257.0, 99 => 399590.7199999996},
+          mode: [226868, 228405],
+          minimum: 213608,
+          maximum: 5507145,
+          relative_more: 8.140936147078687,
+          relative_less: 0.12283599600014582,
+          absolute_difference: 221464.7435491846,
+          sample_size: 19451
         },
-        samples: [458864, 295163, 390643, 871321, 454808, 337366, 258663, 247033, 239663, 228423,
-         240126, 238663, 232256, 233515, 237700, 219479, 267552, 248608, 227034, 232553, 232923,
-         236978, 280015, 243960, 228923, 234386, 234274, 223589, 251829, 236682, 229015, 225405,
-         ...]
+        samples: [451236, 257349, 267182, 270664, 255293, 271312, 239645, 239535, 236497, 229183,
+         248479, 253794, 239979, 250738, 242368, 225683, 241313, 256220, 232072, 274423, 252720,
+         228238, 251109, 245571, 232682, 236127, 235720, 230386, 254386, 249145, 235868, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -340,249 +420,3 @@ Wasm          4.02 K - 8.12x slower +218.32 μs
   ]
 }
 ```
-
-## Bottleneck in executing Wasm binaries
-
-Here we'll conduct an another benchmark to inspect bottleneck of executing Wasm binaries.
-
-* `calc_stats` function is the same as above.
-* `noop` function just returns value without any statistical calculation.
-
-```elixir
-wasm_with_calc_func = fn ->
-  wasm
-  |> Wasmtube.call_function("calc_stats", data: %{values: values})
-end
-
-wasm_without_calc_func = fn ->
-  wasm
-  |> Wasmtube.call_function("noop", data: %{values: values})
-end
-
-Benchee.run(%{
-  "Wasm with calculation" => wasm_with_calc_func,
-  "Wasm without calculation" => wasm_without_calc_func
-})
-```
-
-<!-- livebook:{"output":true} -->
-
-```
-Error trying to determine erlang version enoent
-Operating System: Linux
-CPU Information: Unrecognized processor
-Number of Available Cores: 4
-Available memory: 3.60 GB
-Elixir 1.14.3
-Erlang ok
-
-Benchmark suite executing with the following configuration:
-warmup: 2 s
-time: 5 s
-memory time: 0 ns
-reduction time: 0 ns
-parallel: 1
-inputs: none specified
-Estimated total run time: 14 s
-
-Benchmarking Wasm with calculation ...
-Benchmarking Wasm without calculation ...
-
-Name                               ips        average  deviation         median         99th %
-Wasm without calculation        4.12 K      242.53 μs    ±16.06%      229.93 μs      387.65 μs
-Wasm with calculation           3.75 K      266.92 μs    ±17.52%      255.87 μs      402.57 μs
-
-Comparison: 
-Wasm without calculation        4.12 K
-Wasm with calculation           3.75 K - 1.10x slower +24.39 μs
-```
-
-<!-- livebook:{"output":true} -->
-
-```
-%Benchee.Suite{
-  system: %{
-    available_memory: "3.60 GB",
-    cpu_speed: "Unrecognized processor",
-    elixir: "1.14.3",
-    erlang: :ok,
-    num_cores: 4,
-    os: :Linux
-  },
-  configuration: %Benchee.Configuration{
-    parallel: 1,
-    time: 5000000000.0,
-    warmup: 2000000000.0,
-    memory_time: 0.0,
-    reduction_time: 0.0,
-    pre_check: false,
-    formatters: [Benchee.Formatters.Console],
-    percentiles: '2c',
-    print: %{benchmarking: true, configuration: true, fast_warning: true},
-    inputs: nil,
-    save: false,
-    load: false,
-    unit_scaling: :best,
-    assigns: %{},
-    before_each: nil,
-    after_each: nil,
-    before_scenario: nil,
-    after_scenario: nil,
-    measure_function_call_overhead: false,
-    title: nil,
-    profile_after: false
-  },
-  scenarios: [
-    %Benchee.Scenario{
-      name: "Wasm without calculation",
-      job_name: "Wasm without calculation",
-      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
-      input_name: :__no_input,
-      input: :__no_input,
-      before_each: nil,
-      after_each: nil,
-      before_scenario: nil,
-      after_scenario: nil,
-      tag: nil,
-      run_time_data: %Benchee.CollectionData{
-        statistics: %Benchee.Statistics{
-          average: 242526.46199466244,
-          ips: 4123.261403211366,
-          std_dev: 38950.82792448355,
-          std_dev_ratio: 0.16060444540415053,
-          std_dev_ips: 662.2141109191009,
-          median: 229925.5,
-          percentiles: %{50 => 229925.5, 99 => 387645.20000000024},
-          mode: 212259,
-          minimum: 202666,
-          maximum: 1037592,
-          relative_more: nil,
-          relative_less: nil,
-          absolute_difference: nil,
-          sample_size: 20234
-        },
-        samples: [495222, 281500, 257796, 231889, 275426, 270537, 271518, 240222, 240852, 242481,
-         232204, 249426, 298815, 276463, 238278, 235759, 243667, 224093, 242611, 284703, 298778,
-         246259, 270425, 244814, 229944, 263870, 262056, 289740, 256296, 246073, 246148, 232000,
-         265073, ...]
-      },
-      memory_usage_data: %Benchee.CollectionData{
-        statistics: %Benchee.Statistics{
-          average: nil,
-          ips: nil,
-          std_dev: nil,
-          std_dev_ratio: nil,
-          std_dev_ips: nil,
-          median: nil,
-          percentiles: nil,
-          mode: nil,
-          minimum: nil,
-          maximum: nil,
-          relative_more: nil,
-          relative_less: nil,
-          absolute_difference: nil,
-          sample_size: 0
-        },
-        samples: []
-      },
-      reductions_data: %Benchee.CollectionData{
-        statistics: %Benchee.Statistics{
-          average: nil,
-          ips: nil,
-          std_dev: nil,
-          std_dev_ratio: nil,
-          std_dev_ips: nil,
-          median: nil,
-          percentiles: nil,
-          mode: nil,
-          minimum: nil,
-          maximum: nil,
-          relative_more: nil,
-          relative_less: nil,
-          absolute_difference: nil,
-          sample_size: 0
-        },
-        samples: []
-      }
-    },
-    %Benchee.Scenario{
-      name: "Wasm with calculation",
-      job_name: "Wasm with calculation",
-      function: #Function<43.3316493/0 in :erl_eval.expr/6>,
-      input_name: :__no_input,
-      input: :__no_input,
-      before_each: nil,
-      after_each: nil,
-      before_scenario: nil,
-      after_scenario: nil,
-      tag: nil,
-      run_time_data: %Benchee.CollectionData{
-        statistics: %Benchee.Statistics{
-          average: 266920.25664727314,
-          ips: 3746.4372789116155,
-          std_dev: 46759.89300355243,
-          std_dev_ratio: 0.17518300630642725,
-          std_dev_ips: 656.3121454582076,
-          median: 255867.0,
-          percentiles: %{50 => 255867.0, 99 => 402571.99999999907},
-          mode: 235571,
-          minimum: 225682,
-          maximum: 4314020,
-          relative_more: 1.1005819919689734,
-          relative_less: 0.9086101783393444,
-          absolute_difference: 24393.794652610697,
-          sample_size: 18391
-        },
-        samples: [465679, 345959, 311255, 260459, 277071, 289885, 297552, 322922, 300274, 262497,
-         269792, 335755, 262553, 266700, 278700, 256848, 308478, 283052, 322255, 258127, 264312,
-         250774, 270163, 275145, 263626, 257256, 272756, 248108, 272589, 308700, 308033, 273570,
-         ...]
-      },
-      memory_usage_data: %Benchee.CollectionData{
-        statistics: %Benchee.Statistics{
-          average: nil,
-          ips: nil,
-          std_dev: nil,
-          std_dev_ratio: nil,
-          std_dev_ips: nil,
-          median: nil,
-          percentiles: nil,
-          mode: nil,
-          minimum: nil,
-          maximum: nil,
-          relative_more: nil,
-          relative_less: nil,
-          absolute_difference: nil,
-          sample_size: 0
-        },
-        samples: []
-      },
-      reductions_data: %Benchee.CollectionData{
-        statistics: %Benchee.Statistics{
-          average: nil,
-          ips: nil,
-          std_dev: nil,
-          std_dev_ratio: nil,
-          std_dev_ips: nil,
-          median: nil,
-          percentiles: nil,
-          mode: nil,
-          minimum: nil,
-          maximum: nil,
-          relative_more: nil,
-          relative_less: nil,
-          absolute_difference: nil,
-          sample_size: 0
-        },
-        samples: []
-      }
-    }
-  ]
-}
-```
-
-The `calc_stats` function was 24.39μs slower than the `noop` function in an average value comparison.
-
-* A large portion of the overhead is due to data passing between Elixir and Wasm.
-* The difference between the two functions accounts for only about 10% of the total calculation.
-* Therefore, the more complex the calculation process becomes, the relatively smaller the difference becomes.
