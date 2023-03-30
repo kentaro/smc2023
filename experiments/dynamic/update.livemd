@@ -1,6 +1,6 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Dynamic update by reloading an updated Wasm file
+# Dynamic update by reloading an updated Wasm binary
 
 ```elixir
 Mix.install([
@@ -146,7 +146,7 @@ sequenceDiagram
   Wasmtube ->> Wasm Sandbox: (4) discards <br> the old sandbox
   Wasmtube ->> Wasm Sandbox: (5) re-creates <br> a new sandbox <br> with the file
 
-  Note over Wasmtube, Wasm Sandbox: the process after here <br> is the same above
+  Note over Wasmtube, Wasm Sandbox: the process after here <br> is the same as in Fig. 4
 ```
 
 ## Prepare a worker to handle file update
