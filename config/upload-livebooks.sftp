@@ -4,6 +4,6 @@ mkdir /data/livebook/experiments/isomorphic
 cd /data/livebook/experiments/isomorphic
 put -pr experiments/isomorphic/*
 
-mkdir /data/livebook/experiments/liquid
-cd /data/livebook/experiments/liquid
-put -pr experiments/liquid/*
+mkdir /data/livebook/experiments/dynamic
+cd /data/livebook/experiments/dynamic
+put -pr experiments/dynamic/*
