@@ -90,34 +90,32 @@ To enable dynamic update, Wasmtube handles notification of file update and reloa
 sequenceDiagram
     %%{init:{'theme':'base', 'themeCSS':"text {font-size: 20px !important;} text.sequenceNumber {font-size: 20px !important; } .messageText {font-size: 20px !important;} line.loopLine {stroke-width: 5px !important;} "}}%%
 
-  participant Deployer
-
-  box IoT Device
+  box IoT device
     participant OS
-    participant Elixir App
+    participant App
     participant Wasmtube
-    participant Linear Memory
-    participant Wasm Sandbox
+    participant Linear memory
+    participant Wasm sandbox
   end
 
-  OS ->> Elixir App: (1) starts the app
+  OS ->> App: (1) starts the app
 
-  Elixir App ->> Wasmtube: (2) starts Wasmtube <br> worker
+  App ->> Wasmtube: (2) starts Wasmtube <br> worker
   Wasmtube ->> OS: (3) reads the Wasm file
-  Wasmtube ->> Wasm Sandbox: (4) instantiates a Wasm sandbox <br> with the Wasm file
-  Wasm Sandbox ->> Linear Memory: (5) creates a new <br> linear memory
-  Wasm Sandbox ->> Wasmtube: (6) finish initialization process
+  Wasmtube ->> Wasm sandbox: (4) instantiates a Wasm sandbox <br> with the Wasm file
+  Wasm sandbox ->> Linear memory: (5) creates a new <br> linear memory
+  Wasm sandbox ->> Wasmtube: (6) finishes initialization process
 
   par functions calls
-    Elixir App ->> Wasmtube: (7) calls a function
-    Wasmtube ->> Linear Memory: (8) writes argument <br> data to the <br> function
-    Wasmtube ->> Wasm Sandbox: (9) delegates the function
-    Wasm Sandbox ->> Linear Memory: (10) reads the data
-    Wasm Sandbox ->> Wasm Sandbox: (11) processes <br> the data
-    Wasm Sandbox ->> Linear Memory: (12) writes result data
-    Wasm Sandbox ->> Wasmtube: (13) responds to the call
-    Wasmtube ->> Linear Memory: (14) reads the result
-    Wasmtube ->> Elixir App: (15) delegates <br> the response
+    App ->> Wasmtube: (7) calls a function
+    Wasmtube ->> Linear memory: (8) writes argument <br> data to the <br> function
+    Wasmtube ->> Wasm sandbox: (9) delegates the function
+    Wasm sandbox ->> Linear memory: (10) reads the data
+    Wasm sandbox ->> Wasm sandbox: (11) processes <br> the data
+    Wasm sandbox ->> Linear memory: (12) writes result data
+    Wasm sandbox ->> Wasmtube: (13) responds to the call
+    Wasmtube ->> Linear memory: (14) reads the result
+    Wasmtube ->> App: (15) delegates <br> the response
   end
 ```
 
@@ -133,20 +131,19 @@ sequenceDiagram
 
   participant Deployer
 
-  box IoT Device
+  box IoT device
     participant OS
-    participant Elixir App
     participant Wasmtube
-    participant Wasm Sandbox
+    participant Wasm sandbox
   end
 
   Deployer ->> OS: (1) deploys <br> a modified <br> Wasm file
-  OS ->> Wasmtube: (2) notifies the <br> file update
+  OS ->> Wasmtube: (2) notifies of the <br> file update
   Wasmtube ->> OS: (3) re-reads <br> the updated <br> Wasm file
-  Wasmtube ->> Wasm Sandbox: (4) discards <br> the old sandbox
-  Wasmtube ->> Wasm Sandbox: (5) re-creates <br> a new sandbox <br> with the file
+  Wasmtube ->> Wasm sandbox: (4) discards <br> the old sandbox
+  Wasmtube ->> Wasm sandbox: (5) recreates <br> a new sandbox <br> with the file
 
-  Note over Wasmtube, Wasm Sandbox: the process after here <br> is the same as in Fig. 4
+  Note over Wasmtube, Wasm sandbox: the process after here <br> is the same as in Figure 4
 ```
 
 ## Prepare a worker to handle file update
