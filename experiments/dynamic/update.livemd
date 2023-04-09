@@ -139,7 +139,7 @@ sequenceDiagram
 
   Deployer ->> OS: (1) deploys <br> a modified <br> Wasm file
   OS ->> Wasmtube: (2) notifies of the <br> file update
-  Wasmtube ->> OS: (3) re-reads <br> the updated <br> Wasm file
+  Wasmtube ->> OS: (3) reloads <br> the updated <br> Wasm binary
   Wasmtube ->> Wasm sandbox: (4) discards <br> the old sandbox
   Wasmtube ->> Wasm sandbox: (5) recreates <br> a new sandbox <br> with the file
 
