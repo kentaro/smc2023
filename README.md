@@ -1,6 +1,6 @@
 # Experiments
 
-This repository contains detailed results of the experiments presented in a submitted paper to SMC2023.
+This repository contains detailed results of the experiments presented in a paper submitted to SMC2023.
 
 ## Dynamic IoT Applications
 
